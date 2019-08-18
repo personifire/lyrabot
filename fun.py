@@ -105,30 +105,9 @@ class fun:
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def pop(self, ctx):
         await self.client.send_typing(ctx.message.channel)
-        output = "ERR"
-        count = 9
-        odds = int(100 / count)
-        rand = random.randint(0, 99)
-        if rand < odds:
-            output = "pop/glim.png"
-        elif rand < 2*odds:
-            output = "pop/shy.png"
-        elif rand < 3*odds:
-            output = "pop/twi.png"
-        elif rand < 4*odds:
-            output = "pop/rara.png"
-        elif rand < 5*odds:
-            output = "pop/pink.png"
-        elif rand < 6*odds:
-            output = "pop/aj.png"
-        elif rand < 7*odds:
-            output = "pop/dash.png"
-        elif rand <= 8*odds:
-            output = "pop/spike.png"
-        elif rand <= 9*odds:
-            output = "pop/sun.png"
-        else:
-            output = "images/kys.png"
+
+		pops = ["glim", "shy", "twi", "rara", "pink", "aj", "dash", "spike", "sun", "lyra"]
+		output = "pop/" + random.choice(pops) + ".png"
 
         await self.client.send_file(ctx.message.channel, output)
 

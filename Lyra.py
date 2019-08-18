@@ -23,12 +23,8 @@ prepare = False
 
 loop = asyncio.get_event_loop()
 
-#nuke
-
 
 ######################################################################################################################
-
-
 
 
 @client.event
@@ -66,14 +62,8 @@ async def on_member_join(member):
     await client.add_roles(member, discord.utils.get(member.server.roles, name = ''))
 
 
-
 @client.event
 async def on_message(message):
-
-#    if message.channel.is_private:
-#        print("   " + message.author.name + "#" + message.author.discriminator + ":\n     " + message.content)
-
-
     if message.content and not message.author.bot:
         
         if message.content == "Can I boop you?":

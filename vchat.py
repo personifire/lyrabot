@@ -29,7 +29,6 @@ class vchat:
         output += "*!queue* - Displays the audio currently in the queue\n"
         await self.client.say(output)
 
-
     
     def check_queue(id):
         global queues
@@ -47,6 +46,7 @@ class vchat:
         else:
             await self.client.say("*shrugs*")
                 
+
     @commands.command(pass_context=True)
     @commands.cooldown(1, 15, commands.BucketType.server)
     async def leave(self, ctx):
@@ -84,8 +84,7 @@ class vchat:
                   url += str(" " + message[counter])
                   counter += 1
         
-        if server.id not in players:
-            #print('a')
+		if server.id not in players or not players[server.id].is_playing():
             player = await voice_client.create_ytdl_player(url, ytdl_options={'default_search': 'auto'}, before_options = "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5", after=lambda: vchat.check_queue(server.id))
             if player:
                 players[server.id] = player
@@ -95,18 +94,7 @@ class vchat:
             else:
                 await self.client.say("Can't do that " + ctx.message.author.name)
             
-        elif not players[server.id].is_playing():
-            #print('b')
-            player = await voice_client.create_ytdl_player(url, ytdl_options={'default_search': 'auto'}, before_options = "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5", after=lambda: vchat.check_queue(server.id))
-            if player:
-                players[server.id] = player
-                players[server.id].volume = 0.25
-                players[server.id].start()
-                await self.client.say("You got it " + ctx.message.author.name + ", playing " + player.title)
-            else:
-                await self.client.say("Can't do that " + ctx.message.author.name)
         else:
-            #print('c')
             player = await voice_client.create_ytdl_player(url, ytdl_options={'default_search': 'auto'}, before_options = "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5", after=lambda: vchat.check_queue(server.id))
             if player:
                 if server.id in queues:
@@ -124,7 +112,6 @@ class vchat:
         id = ctx.message.server.id
         players[id].pause()
 
-        
 
     @commands.command(pass_context=True)
     @commands.cooldown(1, 1, commands.BucketType.server)
@@ -136,13 +123,13 @@ class vchat:
             await self.client.say("Removing " + str(index) + ": " + queues[ctx.message.server.id][index-1].title)
             del queues[ctx.message.server.id][index-1]
             
-            
 
     @commands.command(pass_context=True)
     @commands.cooldown(1, 3, commands.BucketType.server)
     async def resume(self, ctx):
         id = ctx.message.server.id
         players[id].resume()
+
 
     @commands.command(pass_context = True)
     @commands.cooldown(1, 5, commands.BucketType.server)
