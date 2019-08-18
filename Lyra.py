@@ -274,4 +274,5 @@ if __name__ == "__main__":
 print("Process ended")
 input("Wait")
 
+client.logout()
 quit()

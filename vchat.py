@@ -8,7 +8,7 @@ import youtube_dl
 class vchat:
     def __init__(self, client):
         self.client = client
-        
+
     global players
     players = {}
     global queues
@@ -29,7 +29,7 @@ class vchat:
         output += "*!queue* - Displays the audio currently in the queue\n"
         await self.client.say(output)
 
-    
+
     def check_queue(id):
         global queues
         players[id] = queues[id].pop(0)
@@ -45,7 +45,7 @@ class vchat:
             await self.client.change_presence(game=discord.Game(name='ly.radio'))
         else:
             await self.client.say("*shrugs*")
-                
+
 
     @commands.command(pass_context=True)
     @commands.cooldown(1, 15, commands.BucketType.server)
@@ -63,13 +63,13 @@ class vchat:
     @commands.command(pass_context=True)
     @commands.cooldown(1, 5, commands.BucketType.server)
     async def play(self, ctx):
-        
+
         server = ctx.message.server
 
         if not self.client.is_voice_connected(server) and ctx.message.author.voice.voice_channel:
             await self.client.join_voice_channel(ctx.message.author.voice.voice_channel)
             await self.client.change_presence(game=discord.Game(name='ly.radio'))
-        
+
         voice_client = self.client.voice_client_in(server)
 
         await self.client.say("Searching...")
@@ -83,8 +83,8 @@ class vchat:
             while(counter < len(message)):
                   url += str(" " + message[counter])
                   counter += 1
-        
-		if server.id not in players or not players[server.id].is_playing():
+
+        if server.id not in players or not players[server.id].is_playing():
             player = await voice_client.create_ytdl_player(url, ytdl_options={'default_search': 'auto'}, before_options = "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5", after=lambda: vchat.check_queue(server.id))
             if player:
                 players[server.id] = player
@@ -93,7 +93,7 @@ class vchat:
                 await self.client.say("You got it " + ctx.message.author.name + ", playing " + player.title)
             else:
                 await self.client.say("Can't do that " + ctx.message.author.name)
-            
+
         else:
             player = await voice_client.create_ytdl_player(url, ytdl_options={'default_search': 'auto'}, before_options = "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5", after=lambda: vchat.check_queue(server.id))
             if player:

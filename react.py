@@ -12,8 +12,8 @@ class react:
         output = ""
         output += "angery, blep, dab, default, excite, floss, flyra, lyravator, scared, swiggityswooty, thonk"
         await self.client.say(output)
-	
-	def add_emote(self, react_name, emote_name, ctx):
+    
+    def add_emote(self, react_name, emote_name, ctx):
         if ctx.message.mentions:
             i = len(self.client.messages)
             found = False
@@ -31,69 +31,63 @@ class react:
     @commands.command(pass_context = True)
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def apples(self, ctx):
-		self.add_emote("apples:525139683395764244", "<:apples:525139683395764244>", ctx)
-
+        self.add_emote("apples:525139683395764244", "<:apples:525139683395764244>", ctx)
 
     @commands.command(pass_context = True)
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def angery(self, ctx):
-		self.add_emote("ANGERY:525142734684815370", "<a:ANGERY:525142734684815370>", ctx)
+        self.add_emote("ANGERY:525142734684815370", "<a:ANGERY:525142734684815370>", ctx)
 
     @commands.command(pass_context = True)
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def blep(self, ctx):
-		self.add_emote("blep:532497085254205450", "<:blep:532497085254205450>", ctx)
+        self.add_emote("blep:532497085254205450", "<:blep:532497085254205450>", ctx)
 
     @commands.command(pass_context = True)
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def dab(self, ctx):
-		self.add_emote("dab:531755608467046401", "<:dab:531755608467046401>", ctx)
+        self.add_emote("dab:531755608467046401", "<:dab:531755608467046401>", ctx)
 
     @commands.command(pass_context = True)
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def default(self, ctx):
-		self.add_emote("default:531762705128751105", "<a:default:531762705128751105>", ctx)
-            
+        self.add_emote("default:531762705128751105", "<a:default:531762705128751105>", ctx)
 
     @commands.command(pass_context = True)
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def excite(self, ctx):
-		self.add_emote("excite:531769597108551691", "<a:excite:531769597108551691>", ctx)
+        self.add_emote("excite:531769597108551691", "<a:excite:531769597108551691>", ctx)
 
     @commands.command(pass_context = True)
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def floss(self, ctx):
-		self.add_emote("floss:531762332121169930", "<a:floss:531762332121169930>", ctx)
-
+        self.add_emote("floss:531762332121169930", "<a:floss:531762332121169930>", ctx)
 
     @commands.command(pass_context = True)
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def flyra(self, ctx):
-		self.add_emote("flyra:531755302996148237", "<a:flyra:531755302996148237>", ctx)
-
+        self.add_emote("flyra:531755302996148237", "<a:flyra:531755302996148237>", ctx)
 
     @commands.command(pass_context = True)
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def lyravator(self, ctx):
-		self.add_emote("lyravator:531772198910689280", "<a:lyravator:531772198910689280>", ctx)
-
+        self.add_emote("lyravator:531772198910689280", "<a:lyravator:531772198910689280>", ctx)
 
     @commands.command(pass_context = True)
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def scared(self, ctx):
-		self.add_emote("scared:532497591426875394", "<:scared:532497591426875394>", ctx)
-
+        self.add_emote("scared:532497591426875394", "<:scared:532497591426875394>", ctx)
 
     @commands.command(pass_context = True)
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def swiggityswooty(self, ctx):
-		self.add_emote("swiggityswooty:531779000251580416", "<a:swiggityswooty:531779000251580416>", ctx)
+        self.add_emote("swiggityswooty:531779000251580416", "<a:swiggityswooty:531779000251580416>", ctx)
 
     @commands.command(pass_context = True)
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def thonk(self, ctx):
-		self.add_emote("thonk:532534756093460481", "<:thonk:532534756093460481>", ctx)
+        self.add_emote("thonk:532534756093460481", "<:thonk:532534756093460481>", ctx)
 
-        
+
 def setup(client):
     client.add_cog(react(client))

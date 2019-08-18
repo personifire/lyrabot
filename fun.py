@@ -55,7 +55,7 @@ class fun:
     async def kill(self, ctx):
         output = ""
         data = []
-        
+
         data.append("*banishes user to the moon*")
         data.append("*banishes user to the sun*")
         data.append("*banishes user to Klugetown*")
@@ -86,9 +86,9 @@ class fun:
         data.append("*transforms user into a filly and sends them to MLPG*")
         data.append("*transforms user into an anonfilly and sends them to Scruffy*")
         data.append("*u̴̠͕̹̮͔ͤ̂̍͊̀̀͡ṇ̨͉͎̩̬̪͔̔ͭͨ̑͂͑͑͐ͩ̇̾̂ͭ͜s̢̻̖̼̙͉̲͍̖͕̜͚̥͚̍̇͂ͫ͜͞iͤ̂ͤ͌͆̍̌ͫ̍͑͊͛̓̚̚͝͏̺̖͉̺͇̫̯̻̝̗͈͓̪͙̰̀͘͝n̨̛̛̞͙̐̅̎̆͒̒̽̾͑́̚͠ͅg̬̤̺̻̖̞̞͉̖̱̯̪̗̙͇̩̻̞ͬ̀ͭ̇͛ͤͨ̀͢͠s̞̦̱̱͍̬̫̊ͬ͐ͤ̀ͩͯ͗̀ͦ͞ user*")
-        
+
         output = data[random.randint(0, len(data)-1)]
-        
+
         if "everyone" in ctx.message.content:
             output = "I'd rather not be banished to the moon thank you very much"
         elif not ctx.message.mentions:
@@ -106,8 +106,8 @@ class fun:
     async def pop(self, ctx):
         await self.client.send_typing(ctx.message.channel)
 
-		pops = ["glim", "shy", "twi", "rara", "pink", "aj", "dash", "spike", "sun", "lyra"]
-		output = "pop/" + random.choice(pops) + ".png"
+        pops = ["glim", "shy", "twi", "rara", "pink", "aj", "dash", "spike", "sun", "lyra"]
+        output = "pop/" + random.choice(pops) + ".png"
 
         await self.client.send_file(ctx.message.channel, output)
 
@@ -117,13 +117,13 @@ class fun:
     async def roll(self, ctx, *args):
         await self.client.send_typing(ctx.message.channel)
         if args[0].isdigit():
-            
+
             if int(args[0]) > 0 and len(args) == 1:
                 ranNum =  random.randint(1, int(args[0]))
                 output = ctx.message.author.mention
                 output += ": " + str(ranNum)
                 await self.client.say(ctx.message.author.mention + ': ' + str(ranNum))
-                
+
             elif int(args[0]) > 0:
                 skip = True
                 ranNum = int(random.randint(1, int(args[0])))
@@ -140,11 +140,11 @@ class fun:
                                     ranNum += mod[x]
                                 ranNum += temp
                                 output += ", " + str(temp)
-                                
+
                         elif arg[0:1].lower() == '+' and arg[1:].isdigit():
                             mod.append(int(arg[1:]))
                             ranNum += int(arg[1:])
-                            
+
                         elif arg[0:1].lower() == '-' and arg[1:].isdigit():
                             mod.append(int(arg[1:]))
                             ranNum -= int(arg[1:])
@@ -153,13 +153,13 @@ class fun:
                     ranNum = 1
                 output += (": " +  str(ranNum))
                 await self.client.say(ctx.message.author.mention + ": " + output)
-                            
+
             else:
                 await self.client.say("Uhm, I don't think I can roll that...")
                 
         else:
             await self.client.say("Uhm, I don't think I can roll that...")
-            
+
 
     @commands.command(pass_context = True)
     @commands.cooldown(2, 7, commands.BucketType.user)
@@ -177,7 +177,7 @@ class fun:
     async def tableflip(self):
         await self.client.say('(ノ°Д°）ノ︵ ┻━┻')
 
-        
+
 
 def setup(client):
     client.add_cog(fun(client))
