@@ -18,8 +18,11 @@ class search:
 
         if args:
             tags = []
-            for tag in args:
-                tags.append(tag.replace("_", " "))
+            joinargs = " ".join(args)
+            if "," in joinargs:
+                tags = [tag.strip() for tag in joinargs.split(",")]
+            else:
+                tags = [tag.replace("_", " ") for tag in args]
 
             if ctx.message.channel.name != "nsfw":
                 if 'grimdark' in tags and 'explicit' in tags:
@@ -28,7 +31,7 @@ class search:
                     if 'lyra' in tags:
                         await self.client.say("Hey, at least take me out to dinner first!")
                     else:
-                        await self.client.say("Ponies are NOT for sexual")
+                        await self.client.say("Ponies are NOT for sexual ||at least not in this channel||")
                 elif 'grimdark' in tags:
                     await self.client.say("I'd rather not see that")
 

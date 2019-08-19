@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 import asyncio
+import sys
 
 #https://discordpy.readthedocs.io/en/latest/api.html#user
 #https://discordapp.com/oauth2/authorize?&client_id=YOUR_CLIENT_ID_HERE&scope=bot&permissions=0
@@ -13,7 +14,7 @@ client.remove_command('help')
 STAR = "410660094083334155"
 LYRA = "495322560188252170"
 CHANNEL = "494919888629006356"
-EXTENSIONS = ['react', 'fun', 'search', 'vchat']
+EXTENSIONS = ['react', 'fun', 'search', 'vchat', 'uno']
 IGNORED = (commands.CommandOnCooldown, commands.CommandNotFound)
 DC = "495322151252131840"
 
@@ -148,13 +149,14 @@ async def help():
     output += "*!react* - Lists all emotes Lyra is capable of using\n"
     output += "*!roll [number]* - Rolls a dice, defaults to 20\n"
     output += "*!rr* - Russian Roulette, try not to get shot\n"
-    output += "*!search* [tag] - Searches Derpibooru for a random image,\n"
-    output += "      supports up to 5 tags, no explicit or grimdark content\n"
-    output += "      use '_' for spaces in tags, and spaces between tag,\n"
+    output += "*!search* [tag] - Searches Derpibooru for a random image.\n"
+    output += "      Can take either commas or spaces between search terms\n"
+    output += "      If using spaces between tags, use '_' for internal spaces\n"
     output += "      EX: 'lyra_heartstrings cute' will search for lyra + cute\n"
     output += "      if no tags are added a random image will be pulled up\n"
+    output += "      No anthro or grimdark content!\n"
     output += "*!tableflip* - Flips a table\n"
-    ##output += "*!uno* - Displays the list of commands for Uno\n"
+    output += "*!uno* - Displays the list of commands for Uno\n"
     output += "*!vchat* - Displays the list of commands for the voice channel\n"
     await client.say(output)
 
@@ -258,6 +260,8 @@ def run_client(client, *args, **kwargs):
         time.sleep(600)
 
 if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        TOKEN = sys.argv[1]
 
     all_extensions_loaded = True
     for extension in EXTENSIONS:
@@ -272,7 +276,6 @@ if __name__ == "__main__":
     else:
         print("Process aborted")
 print("Process ended")
-input("Wait")
 
 client.logout()
 quit()

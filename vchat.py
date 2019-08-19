@@ -62,7 +62,7 @@ class vchat:
 
     @commands.command(pass_context=True)
     @commands.cooldown(1, 5, commands.BucketType.server)
-    async def play(self, ctx):
+    async def vplay(self, ctx):
 
         server = ctx.message.server
 

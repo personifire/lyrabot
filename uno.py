@@ -1,183 +1,336 @@
 import discord
 from discord.ext import commands
+
+import asyncio
 import random
 
 
 """
-Deck, Pile, Hand
-Deck --> Hand, Draw
-Hand --> Pile, Play
-Pile --> Hand, Draw
-Pile --> Deck, Restock
-Deck --> Pile, Stock
+Uno!
 
-Draw + Play, Stock --> Move()
-Restock --> Merge() + Shuffle + Move()
+Has a deck, a discard pile, and hands for every player.
+Players are PM'd their hands after every change -- that is, draws and plays.
 
-Move(), transfers selected card from one stack onto the top of another stack
-Shuffle(), rearranges cards into a random order in a selected stack
-Merge(), combines two stacks into one
-addPlayer(), adds a player to the game
-remPlayer(), removes a player from the game
-(remPlayer() Only to be performed by the player or the host)
+Players join the lobby individually, and can leave at any time. 
+    Players are kicked from the lobby after ten minutes without starting the game.
+    Needs at least 2 players to play.
+    Anybody in the lobby can start the game immediately.
 
-!uno, help command
-!uopen, opens a lobby
-!ustart, starts a lobby
-!ustop, stops a lobby
-!ujoin, adds player to game
-!uleave, removes player from game
-!ukick [mention], begins votekick to remove mentioned player from the game
+ideas:
+    house rules?
+    emoji card display -- :heart: :yellow_heart: :green_heart: :blue_heart:, :zero: :one: ... :nine:
 
+        """
 
-*d2 stacking
-
-
-"""
+DEAL_SIZE = 7
 
 class uno:
     def __init__(self, client):
         self.client = client
-        
-        STAR = "410660094083334155"
-        DEAL_SIZE = 7
+        self.lock    = asyncio.Lock()
+        self.reset_state()
 
-        global deck
-        global pile
-        global hands
-        global host
-        global playing
-        global player_queue
+    async def help(self):
+        # remember to update uno() for new commands
+        helpstr  = "```"
+        helpstr += "!uno [help]             Prints this message\n"
+        helpstr += "!uno join               Joins the lobby\n"
+        helpstr += "!uno leave              Leaves the lobby or the game\n"
+        helpstr += "!uno start              Starts a game with everybody in the lobby\n"
+        #helpstr += "!uno stop               Votes to end the game early\n"
+        #helpstr += "!uno kick <mention>     Tries to votekick mentioned player\n"
+        #helpstr += "!uno play <card | num>  Plays a card from your hand\n"
+        helpstr += "!uno play <num>         Plays a card from your hand\n"
+        helpstr += "!uno draw               Draws a card from the deck\n"
+        helpstr += "!uno hand               Tells you what cards are in your hand\n"
+        helpstr += "```"
+        await self.client.say(helpstr)
 
-        deck = []
-        pile = []
-        hands = {}
-        host = None
-        playing = False
-        player_queue = []
-
-        counter = 0
-        max = 40
-        while counter < max:
-            card = [int(counter/10),  counter%10]
-            #print(card)
-            deck.append(card)
-            if card[1] != 0:
-                deck.append(card)
-            counter += 1
-        #print('---')
-
-        counter = 0
-        max = 24
-
-        while counter < max:
-            card = [int(counter/6), 10 + (counter%3)]
-            #print(card)
-            deck.append(card)
-            counter += 1
-        #print('---')
-
-        counter = 0
-        max = 8
-        while counter < max:
-            card = [4, 13 + (counter%2)]
-            #print(card)
-            deck.append(card)
-            counter += 1
-
-
-        #print('---')
-        #print(deck,', Length: ', len(deck))
-        #print('---')
-
-
-            
-
-    @commands.command()
-    #@commands.cooldown(1, 30, commands.BucketType.user)
-    async def uno(self):
-        output = ""
-        output += "*!ustart* - "
-        
-        await self.client.say(output)
-
-    @commands.command(pass_context = True)
-    async def uopen(self):
-
-        if not playing:
-            global player_queue
-            global host
-
-            host = ctx.message.author
-            player_queue = []
-            player_queue.append(host)
-            await self.client.say("" + host.name + " has started an Uno lobby!\nType *!unjoin* to join")
+    async def join(self, ctx):
+        if not self.in_game:
+            await self.lock.acquire()
+            try:
+                if ctx.message.author in self.players:
+                    await self.client.say("You can't join a game twice :V")
+                    return
+                else:
+                    self.players.append(ctx.message.author)
+            finally:
+                self.lock.release()
+            num_players = len(self.players)
+            if num_players <= 1:
+                await self.client.say(ctx.message.author.name + ' has started an Uno lobby! Type "!uno join" to join.')
+            else:
+                await self.client.say(ctx.message.author.name + " has joined the game! Total players: " + str(num_players))
         else:
-            await self.client.say("There's already a game going, type *!ujoin* to join")
+            await self.client.say("Sorry, " + ctx.message.author.name + ", wait for the current game to end before joining.")
 
-    @commands.command()
-    async def ustart(self):
-
-        global hands
-        numPlayers = len(hands)
-
-        counter = 0
-
-
-        while counter < numPlayers:
-            hand = []
-            
-            deal()
-            counter += 1
-
-        num = random.randint(0, len(deck))
-        pile.append(deck[num])
-        deck.remove(deck[num])
-
-    @commands.command(pass_context = True)
-    async def ustop(self):
-        if ctx.message.author.id == STAR or ctx.message.author.name == "Aanon" or ctx.message.author == host:
-            uno.leave(hands)
-        else:
-            await self.client.say("You don't have permission to do that!")
+    async def leave(self, ctx):
+        player = ctx.message.author
+        if player not in self.players:
+            await self.client.say("You can't leave if you haven't joined!")
             return
 
-    @commands.command(pass_context = True)
-    async def ujoin(self):
-        if not playing:
-            u
-        else:
-            u
-            
+        await self.lock.acquire()
+        try:
+            self.remove_player(player)
+        finally:
+            self.lock.release()
 
-    @commands.command(pass_context = True)
-    async def uleave(self):
-        if ctx.message.author.id == STAR or ctx.message.author.name == "Aanon" or ctx.message.author == host:
-            temp = []
-            temp.append(ctx.message.author)
-            uno.leave(temp)
-        else:
-            await self.client.say("You don't have permission to do that!")
+        await self.client.say(player.name + " has left the game. " + str(len(self.players)) + " players remain.")
+
+        if len(self.players) <= 1:
+            await self.lock.acquire()
+            try:
+                self.end_game()
+            finally:
+                self.lock.release()
+            await self.client.say("Too few players left. Ending the game now, sorry!")
+
+    async def start(self, ctx):
+        await self.lock.acquire()
+        try:
+            random.shuffle(self.deck)
+
+            for player in self.players:
+                self.hands[player] = self.deck[-DEAL_SIZE:]
+                del self.deck[-DEAL_SIZE:]
+            self.discard.append(self.deck.pop())
+
+            self.in_game = True
+        finally:
+            self.lock.release()
+        msg = "Game is starting! Turn order: "
+        for player in self.players:
+            msg += "<@" + player.id + "> "
+        await self.client.say(msg)
+        await self.lock.acquire()
+        try:
+            self.turn -= self.direction # compensate for preincrement in new turn
+            await self.new_turn()
+        finally:
+            self.lock.release()
+
+    async def stop(self, ctx):
+        if not self.in_game:
+            await self.client.say("You can't stop a game that isn't going, silly!")
             return
-        
-    @commands.command(pass_context = True)
-    async def ukick(self, ctx):
-        if ctx.message.author.id == STAR or ctx.message.author.name == "Aanon" or ctx.message.author == host:
-            uno.leave(ctx.message.mentions)
+
+        votestop_threshold = 1 + (len(self.players) // 2)
+        if ctx.message.author in self.stops:
+            await self.client.say('You can only vote to end the game once! Try "!uno leave" to leave early.')
         else:
-            await self.client.say("You don't have permission to do that!")
+            await self.lock.acquire()
+            try:
+                self.stops.add(ctx.message.author)
+            finally:
+                self.lock.release()
+            await self.client.say(ctx.message.author.name + " has voted to end the game. " + 
+                                  str(len(self.stops)) + "/" + str(votestop_threshold) + " stop votes received.")
+
+        if len(self.stops) > len(self.players) // 3:
+            await self.lock.acquire()
+            try:
+                self.end_game()
+            finally:
+                self.lock.release()
+            await self.client.say("Stop votes received! Game is ending.")
+
+    async def kick(self, ctx, *args):
+        if not self.in_game:
+            await self.client.say("You can wait until the game is started to start kicking people.")
             return
 
-    
+        votekick_threshold = 1 + (len(self.players) // 3)
+        if ctx.message.mentions:
+            player = ctx.message.mentions[0]
+            await self.lock.acquire()
+            try:
+                if player not in self.kicks:
+                    self.kicks[player] = {ctx.message.author}
+                else:
+                    if ctx.message.author in self.kicks[player]:
+                        await self.client.say("You can only vote to kick someone once!")
+                    else:
+                        self.kicks[player].add(ctx.message.author)
+            finally:
+                self.lock.release()
+            await self.client.say(ctx.message.author.name + " has voted to kick " + player.name + ". " +
+                                  str(len(self.kicks[player])) + "/" + str(votekick_threshold) + " kick votes received.")
+
+    async def play(self, ctx, *args):
+        player = ctx.message.author
+        if not self.in_game:
+            await self.client.say("Wait for the game to start before trying to play your cards!")
+        elif player != self.players[self.turn]:
+            await self.client.say("Wait for your turn, " + player.name + "!")
+        elif not args:
+            await self.client.say("You need to select a card to play.")
+        else:
+            try:
+                index = int(args[0][0])
+            except ValueError:
+                await self.client.say("Try a number, instead.")
+            if index < 0 or index > len(self.hands[player]):
+                await self.client.say("Try a number that makes sense, instead.")
+
+            card = self.hands[player][index - 1]
+            top  = self.discard[-1]
+            if card[0] != top[0] and card[1] != top[1]:
+                await self.client.say("You can't put that card there!")
+                return
+            await self.lock.acquire()
+            try:
+                if card[0] == "wild":
+                    pass # TODO figure out how wildcards work
+                elif card[1] == "skip":
+                    self.turn += self.direction
+                elif card[1] == "reverse":
+                    self.direction = -self.direction
+                elif card[1] == "draw 2":
+                    self.turn += self.direction
+                    for times in range(2):
+                        await self.draw(ctx) # TODO fix this to not depend on message author context to force other player to draw
+                self.discard.append(self.hands[player].pop(index - 1))
+                await self.new_turn()
+            finally:
+                self.lock.release()
 
 
+    async def draw(self, ctx, *args):
+        player = ctx.message.author
+        if not self.in_game:
+            await self.client.say("Wait for the game to start before drawing!")
+        elif player != self.players[self.turn]:
+            await self.client.say("Wait for your turn, " + player.name + "!")
+        else:
+            if len(self.deck) == 0:
+                await self.lock.acquire()
+                try:
+                    self.reshuffle()
+                finally:
+                    self.lock.release()
+            await self.lock.acquire()
+            try:
+                self.hands[player].append(self.deck.pop())
+            finally:
+                self.lock.release()
+            msg = "You drew:\n"
+            msg += str(len(self.hands[player])) + ": " + self.hands[player][-1][0] +  " " + self.hands[player][-1][1])
+            await self.client.send_message(player, msg)
 
+    async def hand(self, ctx):
+        await self.send_hand(ctx.message.author)
 
-    
+    @commands.command(pass_context = True)
+    async def uno(self, ctx, *args):
+        if args:
+            # remember to update help() for new commands
+            if   args[0] == "help":
+                await self.help()
+            elif args[0] == "join":
+                await self.join(ctx)
+            elif args[0] == "leave":
+                await self.leave(ctx)
+            elif args[0] == "start":
+                await self.start(ctx)
+            elif args[0] == "stop":
+                await self.stop(ctx)
+            elif args[0] == "kick":
+                await self.kick(ctx, *args[1:])
+            elif args[0] == "play":
+                await self.play(ctx, *args[1:])
+            elif args[0] == "draw":
+                await self.draw(ctx, *args[1:])
+            elif args[0] == "hand":
+                await self.hand(ctx)
+            else:
+                await self.client.say("Unknown uno command" + args[0] + '. Try "!uno help"')
+            return
+        else:
+            await self.help()
+
+###################################################################################################
+
+    async def send_hand(self, player):
+        hand = player.name + " , your current uno hand is:\n"
+        for idx, card in enumerate(self.hands[player]):
+            hand += "*" + str(idx + 1) + "*: "
+            # TODO emoji output for cards
+            hand += card[0] + " " + card[1] + "\n"
+        await self.client.send_message(player, hand)
+        await self.client.send_message(player, "Top of the discard pile is: " + self.discard[-1][0] + " " + self.discard[-1][1])
+
+    async def new_turn(self):
+        if not self.lock.locked():
+            print("Not locked -- won't do anything in case of concurrent issues.")
+            return
+        self.turn = (self.turn + self.direction) % len(self.players)
+        await self.send_hand(self.players[self.turn])
+        await self.client.say("Top of the discard pile is: " + self.discard[-1][0] + " " + self.discard[-1][1])
+
+    def reshuffle(self):
+        if not self.lock.locked():
+            print("Not locked -- won't do anything in case of concurrent issues.")
+            return
+        topcard = self.discard.pop()
+        random.shuffle(discard)
+        self.deck = self.discard + self.deck
+        self.discard = [topcard]
+
+    def end_game(self):
+        if not self.lock.locked():
+            print("Not locked -- won't do anything in case of concurrent issues.")
+            return
+        for player in self.players:
+            self.remove_player(player)
+        self.reset_state()
+
+    def remove_player(self, player):
+        if not self.lock.locked():
+            print("Not locked -- won't do anything in case of concurrent issues.")
+            return
+        if self.in_game:
+            self.discard = self.hands[player] + self.discard
+            del self.hands[player]
+
+            if player in self.kicks:
+                del self.kicks[player]
+            for votekick in self.kicks:
+                if player in votekick:
+                    self.kicks[votekick].remove(player)
+            if player in self.stops:
+                self.stops.remove(player)
+
+            self.players.remove(player)
+        else:
+            self.players.remove(player)
+
+    def reset_state(self):
+        self.in_game = False
+        self.deck    = []
+        self.discard = []
+        self.players = []
+        self.hands   = {}
+        self.kicks   = {}
+        self.stops   = set()
+        self.turn    = 0
+
+        self.wildcolor = ""
+        self.direction = 1
+
+        colors   = ["red", "yellow", "green", "blue"]
+        numbers  = list(range(10)) + list(range(1, 10))
+        specials = ["skip", "reverse", "draw 2"]      * 2
+        #wilds    = ["", "draw 4"]                     * 4
+
+        self.deck += [(color, str(number)) for color in colors for number in numbers]
+        self.deck += [(color, special)     for color in colors for special in specials]
+        #self.deck += [("wild", wildtype)   for wildtype in wilds]
+
     def move(self, stack1, stack2):
-        
+        pass
 
-    
     def shuffle(self, stack):
         counter = 0
         max = 107
@@ -191,9 +344,7 @@ class uno:
             counter += 1
 
     def merge(self):
-        y
-
-    def leave(self, users):
+        pass
 
     def deal(self, player):
         counter = 0
@@ -203,14 +354,6 @@ class uno:
             hand.append(deck[num].pop())
             counter += 1
         hands.append(hand)
-
-
-
-
-
-
-            
-
 
 
 def setup(client):
