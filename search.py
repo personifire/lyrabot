@@ -16,43 +16,35 @@ class search:
             await self.client.say("<#494919888629006356>")
             return
 
-        if args:
-            tags = []
-            joinargs = " ".join(args)
-            if "," in joinargs:
-                tags = [tag.strip() for tag in joinargs.split(",")]
-            else:
-                tags = [tag.replace("_", " ") for tag in args]
-
-            if ctx.message.channel.name != "nsfw":
-                if 'grimdark' in tags and 'explicit' in tags:
-                    await self.client.say("How about *no* <:ew:532536050350948376>")
-                elif 'explicit' in tags:
-                    if 'lyra' in tags:
-                        await self.client.say("Hey, at least take me out to dinner first!")
-                    else:
-                        await self.client.say("Ponies are NOT for sexual ||at least not in this channel||")
-                elif 'grimdark' in tags:
-                    await self.client.say("I'd rather not see that")
-
-                else:   
-                    tags.extend(["-explicit", "-grimdark", "-anthro"])
-                    for post in self.searcher.query(*tags).sort_by(sort.RANDOM).limit(1):
-                        await self.client.say(post.url)
-            else: # in nsfw
-                if 'grimdark' in tags or 'anthro' in tags:
-                    await self.client.say("<:ew:532536050350948376>")
-                else:
-                    tags.extend(["-grimdark", "-anthro", "-safe"])
-                    for post in self.searcher.query(*tags).sort_by(sort.RANDOM).limit(1):
-                        await self.client.say(post.url)
-
+        tags = []
+        joinargs = " ".join(args)
+        if "," in joinargs:
+            tags = [tag.strip() for tag in joinargs.split(",")]
         else:
-            if ctx.message.channel.name != "nsfw":
-                for post in self.searcher.query("-explicit", "-grimdark", "-anthro").sort_by(sort.RANDOM).limit(1):
+            tags = [tag.replace("_", " ") for tag in args]
+
+        if ctx.message.channel.name != "nsfw":
+            if 'grimdark' in tags and 'explicit' in tags:
+                await self.client.say("Absolutely not.")
+            elif 'explicit' in tags:
+                if 'lyra' in tags:
+                    await self.client.say("Hey, at least take me out to dinner first!")
+                else:
+                    await self.client.say("Ponies are NOT for sexual ||at least not in this channel||")
+            elif 'grimdark' in tags:
+                await self.client.say("I'd rather not see that")
+            elif 'anthro' in tags:
+                await self.client.say("Get some better taste!")
+            else:   
+                tags.extend(["-explicit", "-grimdark", "-anthro"])
+                for post in self.searcher.query(*tags).sort_by(sort.RANDOM).limit(1):
                     await self.client.say(post.url)
+        else: # in nsfw
+            if 'grimdark' in tags or 'anthro' in tags:
+                await self.client.say("<:ew:532536050350948376>")
             else:
-                for post in self.searcher.query("explicit", "-grimdark", "-anthro").sort_by(sort.RANDOM).limit(1):
+                tags.extend(["-grimdark", "-anthro", "-safe"])
+                for post in self.searcher.query(*tags).sort_by(sort.RANDOM).limit(1):
                     await self.client.say(post.url)
 
 def setup(client):

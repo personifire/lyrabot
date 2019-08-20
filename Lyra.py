@@ -12,21 +12,14 @@ client = commands.Bot(command_prefix = '!')
 client.remove_command('help')
 
 STAR = "410660094083334155"
-LYRA = "495322560188252170"
-CHANNEL = "494919888629006356"
 EXTENSIONS = ['react', 'fun', 'search', 'vchat', 'uno']
-IGNORED = (commands.CommandOnCooldown, commands.CommandNotFound)
-DC = "495322151252131840"
-
 
 status = True
 prepare = False
 
 loop = asyncio.get_event_loop()
 
-
 ######################################################################################################################
-
 
 @client.event
 async def on_ready():
@@ -37,43 +30,34 @@ async def on_ready():
 async def on_resumed():
     print("Lyra has reconnected")
 
-"""
 @client.event
 async def on_command_error(err, ctx):
     if isinstance(err, IGNORED):
-        return
-    elif isinstance(err, commands.MissingRequiredArgument):
-        await client.send_message(ctx.message.channel, "Gimme something to work with here")
-    elif isinstance(err, TypeError):
-        await client.send_message(ctx.message.channel, "I don't know how to do that")
+        await client.send_message(ctx.message.channel, "You're on cooldown, " + ctx.message.author.display_name)
     else:
-        print("Command: " + ctx.message.content + "\nError: ")
-        print(err)
-"""
+        print("I just don't know what went wrong!")
 
 @client.event
 async def on_member_remove(member):
     for channel in member.server.channels:
         if channel.name == "lyra":
             lyra = channel
-    await client.send_message(lyra, '' + member.display_name + ' has left the server')
+    await client.send_message(lyra, member.display_name + ' has left the server')
 
 @client.event
 async def on_member_join(member):
     await client.add_roles(member, discord.utils.get(member.server.roles, name = 'everypony'))
 
-
 @client.event
 async def on_message(message):
     if message.content and not message.author.bot:
-        
         if message.content == "Can I boop you?":
             await client.send_message(message.channel, "*gasp* but that's lewd!")
 
-        elif "screwbot " in message.content.lower() or " screwbot" in message.content.lower() or " screwbot " in message.content.lower() or "screwbot" == message.content.lower():
+        elif "screwbot " in message.content.lower() or " screwbot" in message.content.lower() or "screwbot" == message.content.lower():
             await client.send_message(message.channel, "<a:headcannonL:532554000818634783><:screwbot:532520479290818560><a:headcannonR:532554001321951262>")
 
-        elif 'hands ' in message.content.lower() or ' hands ' in message.content.lower() or ' hands' in message.content.lower() or 'hands' == message.content.lower():
+        elif 'hands ' in message.content.lower() or ' hands' in message.content.lower() or 'hands' == message.content.lower():
             await client.send_message(message.channel, "<:mfw:532548719510552586>")
 
         elif ':' in message.content.lower():
@@ -101,7 +85,6 @@ async def on_message(message):
             elif "thonk" in new:
                 await client.send_message(message.channel, "<:thonk:532534756093460481>")
 
-
         elif 'lyra' in message.content.lower() and 'play' in message.content.lower():
             if 'despacito' in message.content.lower():
                 await client.send_message(message.channel, 'https://youtu.be/kJQP7kiw5Fk')
@@ -116,7 +99,6 @@ async def on_message(message):
             elif 'discord' in message.content.lower():
                 await client.send_message(message.channel, 'https://youtu.be/xPfMb50dsOk')
 
-                
         if client.user.display_name in message.content.lower():
             if 'hi' in message.content.lower() or 'hello' in message.content.lower() or 'sup' in message.content.lower():
                 await client.send_message(message.channel, 'Hi ' + message.author.display_name + '!')
@@ -174,7 +156,6 @@ async def avatar(ctx):
 @client.command(pass_context = True)
 @commands.cooldown(2, 7, commands.BucketType.user)
 async def emote(ctx):
-
     await client.send_typing(ctx.message.channel)
     emotes = list(client.get_all_emojis())
     i = len(emotes)
@@ -201,7 +182,6 @@ async def emote(ctx):
         await client.say("*shrugs*")
         print(name + ":")
 
-
 @client.command(pass_context = True)
 async def dm(ctx):
     await client.send_message(ctx.message.author, "bon")
@@ -211,18 +191,18 @@ async def nuke(ctx):
     global prepare
     
     if ctx.message.author.id == STAR:
-            if(prepare):
-                i = 0
-                while(i < 15):
-                    await client.say("<:dab:531755608467046401>")
-                    i+= 1
-                prepare = False
-            else:
-                await client.say("You're gonna have a bad time. Cont?")
-                prepare = True
+        if(prepare):
+            msg = ""
+            for i in range(10):
+                msg += "<:dab:531755608467046401>\n"
+            for i in range(10):
+                await client.say(msg)
+            prepare = False
+        else:
+            await client.say("You're gonna have a bad time. Cont?")
+            prepare = True
     else:
         await client.say("You're not the boss of me!")
-
 
 @client.command(pass_context = True)
 async def snuggle(ctx):
@@ -246,18 +226,7 @@ async def rest(ctx):
     elif ctx.message.author.id != STAR:
         await client.say("You're not the boss of me!")
 
-
 ######################################################################################################################
-
-def run_client(client, *args, **kwargs):
-    loop = asyncio.get_event_loop()
-    while True:
-        try:
-            loop.run_until_complete(client.start(*args, **kwargs))
-        except Exception as e:
-            print("Error", e)  # or use proper logging
-        print("Waiting until restart")
-        time.sleep(600)
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:

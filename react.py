@@ -5,7 +5,6 @@ class react:
     def __init__(self, client):
         self.client = client
 
-
     @commands.command()
     @commands.cooldown(1, 15, commands.BucketType.channel)
     async def react(self):
@@ -15,16 +14,11 @@ class react:
     
     async def add_emote(self, react_name, emote_name, ctx):
         if ctx.message.mentions:
-            i = len(self.client.messages)
-            found = False
-            while i > 0 and not found:
-                i -= 1
-                if self.client.messages[i].author == ctx.message.mentions[0]:
-                    found = True
-            if found:
-                await self.client.add_reaction(self.client.messages[i], react_name)
-            else:
-                await self.client.say("*shrugs*")
+            for msg in reversed(self.client.messages):
+                if msg.author == ctx.message.mentions[0]:
+                    await self.client.add_reaction(self.client.messages[i], react_name)
+                    return
+            await self.client.say("*shrugs*")
         else:
             await self.client.say(emote_name)
 
@@ -87,7 +81,6 @@ class react:
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def thonk(self, ctx):
         await self.add_emote("thonk:532534756093460481", "<:thonk:532534756093460481>", ctx)
-
 
 def setup(client):
     client.add_cog(react(client))

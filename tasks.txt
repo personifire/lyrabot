@@ -1,28 +1,41 @@
 
 Priorities:
-1. Uno
-2. Refactor to remove hard-coded things
-3. Refactor to discord.py 1.3
+1. More Uno
+2. Refactor to discord.py 1.3
+3. Refactor to remove hard-coded things
 
+UNO STUFF
+  Wildcards
+  The actual "UNO!" part of uno
+  More obvious layout for cards you can/can't play (bold?)
+  Timers -- turn reminders, autokicks, etc.
+  House rules(?)
 
+TO REVISIT
+  fun.py
+    Rolls!
+  Lyra.py (for various things)
+  react.py
+    Figure out how to make it automatically update what commands are available
+  vchat.py
+    ... Triage required.
 
 SMALL FEATURES
-time zone converter
-vchat fixes
+  time zone converter
+  vchat fixes
 
 BIG FEATURES
-uno
-blackjack
-poker
-pi hosting
+  blackjack
+  poker
+  pi hosting
 
 REFERENCES
-bananas
-ponies with hats
-background pony
-boncord
+  bananas
+  ponies with hats
+  background pony
+  boncord
 
 ERRORS
 
 MAYBE
-image manipulation
+  image manipulation

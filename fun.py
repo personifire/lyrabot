@@ -5,100 +5,88 @@ import random
 class fun:
     def __init__(self, client):
         self.client = client
+        self.star_id = "410660094083334155"
 
-        global STAR
-        global LYRA
-
-        STAR = "410660094083334155"
-        LYRA = "495322560188252170"
-
-        global russianCount
-        russianCount = random.randint(0, 5)
+        self.russianCount = random.randint(0, 5)
 
 
     @commands.command(pass_context=True)
     @commands.cooldown(2, 7, commands.BucketType.user)
     async def boop(self, ctx):
         if ctx.message.mentions:
+            user = ctx.message.mentions[0]
             if self.client.user in ctx.message.mentions:
-                await self.client.say('but ' + ctx.message.author.display_name + ', that\'s *lewd!*')
-            elif str(STAR) in ctx.message.mentions[0].id:
-                await self.client.say('*boops* <@' + STAR + '> *sensually*')
+                user = self.client.user
             elif "www." in ctx.message.content or ".org" in ctx.message.content or ".com" in ctx.message.content or ".xxx" in ctx.message.content:
-                await self.client.say('*boops ' + ctx.message.author.name)                
-            else:
-                await self.client.say('*boops* ' + ctx.message.mentions[0].display_name)
+                user = ctx.message.author
         else:
             if '@everyone' in ctx.message.content.lower():
                 await self.client.say('That\'s a *lot* of boops')
-            elif ctx.message.author.id == STAR:
-                await self.client.say('*boops* <@' + STAR + '> *sensually*')
-            elif "www." in ctx.message.content or ".org" in ctx.message.content or ".com" in ctx.message.content or ".xxx" in ctx.message.content:
-                await self.client.say('*boops ' + ctx.message.author.name) 
-            else:
-                await self.client.say('*boops* ' + ctx.message.author.display_name)
-
+                return
+            user = ctx.message.author
+        if self.star_id in user.id:
+            await self.client.say('*boops* <@' + self.star_id + '> *sensually*')
+        else:
+            await self.client.say('*boops* ' + user.display_name)
 
     @commands.command()
     @commands.cooldown(2, 7, commands.BucketType.user)
     async def flip(self):
         coin = random.randint(0, 99)
-        result = "none"
+        result = "Heads"
         if coin < 50:
             result = "Tails"
-        else:
-            result = "Heads"
         await self.client.say(result)
 
     @commands.command(pass_context = True)
     @commands.cooldown(2, 7, commands.BucketType.user)
     async def kill(self, ctx):
         output = ""
-        data = []
+        data = [
+                "*banishes {} to the moon*",
+                "*banishes {} to the sun*",
+                "*banishes {} to Klugetown*",
+                "*bucks {} in the jaw*",
+                "*dunks {} into the Stream of Silence until they stop moving*",
+                "*dunks {} into the Mirror Pool until they stop moving*",
+                "*feeds {} to the timberwolves*",
+                "*feeds {} to the hydra*",
+                "*feeds {} to the parasprites*",
+                "*feeds {} to the puckwudgies*",
+                "*feeds {} to the tatzlewurm*",
+                "*feeds {} to a pack of ravenous kirin*",
+                "*feeds {} to ahuizotl*",
+                "*feeds {} to the sphinx*",
+                "*feeds {} to l̸͈̰̮͖̝̞̟̹̝̎̆̈́̉̏́o͋̍̊ͭ҉̡͍̮̫̤̠͔̬͔̠̳̪̞̣̟͙̥̯́͞ọ̷̶̯͍̖̟̱̼͎͖͙̠̤̪̈́̈́͊ͥ̒ͪ̅̌ͮ̚n̶̨̮̱̥͖̹̊ͩ͌̐ͩ́̆̂ͨ͠͠ą̶̛̜͚̱̹͈̤̐ͮ̅̐͌ͥͬ̒͗ͮͮ̍*",
+                "*scruffinates {}*",
+                "*smashes {}'s face with a hoof*",
+                "*sells {} to the Diamond Dogs*",
+                "*sends {} to RGRE*",
+                "*sends {} to 4channel*",
+                "*suffocates* {} *in her chest fluff*",
+                "*ties a brick to {} to let them swim with the seaponies*",
+                "*throws {} off of Twilight's castle*",
+                "*throws {} off the side of Canterlot*",
+                "*throws {} to the gas chamber*",
+                "*traps {} in a 1-second long time loop*",
+                "*transforms {} into a mare and sends them to SPG*",
+                "*transforms {} into a filly and sends them to MLPG*",
+                "*transforms {} into an anonfilly and sends them to Scruffy*",
+                "*u̴̠͕̹̮͔ͤ̂̍͊̀̀͡ṇ̨͉͎̩̬̪͔̔ͭͨ̑͂͑͑͐ͩ̇̾̂ͭ͜s̢̻̖̼̙͉̲͍̖͕̜͚̥͚̍̇͂ͫ͜͞iͤ̂ͤ͌͆̍̌ͫ̍͑͊͛̓̚̚͝͏̺̖͉̺͇̫̯̻̝̗͈͓̪͙̰̀͘͝n̨̛̛̞͙̐̅̎̆͒̒̽̾͑́̚͠ͅg̬̤̺̻̖̞̞͉̖̱̯̪̗̙͇̩̻̞ͬ̀ͭ̇͛ͤͨ̀͢͠s̞̦̱̱͍̬̫̊ͬ͐ͤ̀ͩͯ͗̀ͦ͞ {}*",
+            ]
 
-        data.append("*banishes user to the moon*")
-        data.append("*banishes user to the sun*")
-        data.append("*banishes user to Klugetown*")
-        data.append("*bucks user in the jaw*")
-        data.append("*dunks user into the Stream of Silence until they stop moving*")
-        data.append("*dunks user into the Mirror Pool until they stop moving*")
-        data.append("*feeds user to the timberwolves*")
-        data.append("*feeds user to the hydra*")
-        data.append("*feeds user to the parasprites*")
-        data.append("*feeds user to the puckwudgies*")
-        data.append("*feeds user to the tatzlewurm*")
-        data.append("*feeds user to a pack of ravenous kirin*")
-        data.append("*feeds user to ahuizotl*")
-        data.append("*feeds user to the sphinx*")
-        data.append("*feeds user to l̸͈̰̮͖̝̞̟̹̝̎̆̈́̉̏́o͋̍̊ͭ҉̡͍̮̫̤̠͔̬͔̠̳̪̞̣̟͙̥̯́͞ọ̷̶̯͍̖̟̱̼͎͖͙̠̤̪̈́̈́͊ͥ̒ͪ̅̌ͮ̚n̶̨̮̱̥͖̹̊ͩ͌̐ͩ́̆̂ͨ͠͠ą̶̛̜͚̱̹͈̤̐ͮ̅̐͌ͥͬ̒͗ͮͮ̍*")
-        data.append("*scruffinates user*")
-        data.append("*smashes user's face with a hoof*")
-        data.append("*sells user to the Diamond Dogs*")
-        data.append("*sends user to RGRE*")
-        data.append("*sends user to 4channel*")
-        data.append("*suffocates* user *in her chest fluff*")
-        data.append("*ties a brick to user to let them swim with the seaponies*")
-        data.append("*throws user off of Twilight's castle*")
-        data.append("*throws user off the side of Canterlot*")
-        data.append("*throws user to the gas chamber*")
-        data.append("*traps user in a 1-second long time loop*")
-        data.append("*transforms user into a mare and sends them to SPG*")
-        data.append("*transforms user into a filly and sends them to MLPG*")
-        data.append("*transforms user into an anonfilly and sends them to Scruffy*")
-        data.append("*u̴̠͕̹̮͔ͤ̂̍͊̀̀͡ṇ̨͉͎̩̬̪͔̔ͭͨ̑͂͑͑͐ͩ̇̾̂ͭ͜s̢̻̖̼̙͉̲͍̖͕̜͚̥͚̍̇͂ͫ͜͞iͤ̂ͤ͌͆̍̌ͫ̍͑͊͛̓̚̚͝͏̺̖͉̺͇̫̯̻̝̗͈͓̪͙̰̀͘͝n̨̛̛̞͙̐̅̎̆͒̒̽̾͑́̚͠ͅg̬̤̺̻̖̞̞͉̖̱̯̪̗̙͇̩̻̞ͬ̀ͭ̇͛ͤͨ̀͢͠s̞̦̱̱͍̬̫̊ͬ͐ͤ̀ͩͯ͗̀ͦ͞ user*")
-
-        output = data[random.randint(0, len(data)-1)]
+        output = random.choice(data)
 
         if "everyone" in ctx.message.content:
             output = "I'd rather not be banished to the moon thank you very much"
         elif not ctx.message.mentions:
-            output = output.replace("user", ctx.message.author.display_name)
-        elif self.client.user in ctx.message.mentions or str(STAR) in ctx.message.mentions[0].id:
-            output = output.replace("user", ctx.message.author.display_name)
+            output = output.format(ctx.message.author.display_name)
+        elif self.client.user in ctx.message.mentions or self.star_id in ctx.message.mentions[0].id:
+            output = output.format(ctx.message.author.display_name)
         elif ctx.message.author in ctx.message.mentions:
             output = ":doughnut:"
         else:
-            output = output.replace("user", ctx.message.mentions[0].display_name)
+            output = output.format(ctx.message.mentions[0].display_name)
         await self.client.say(output)
 
     @commands.command(pass_context = True)
@@ -164,13 +152,12 @@ class fun:
     @commands.command(pass_context = True)
     @commands.cooldown(2, 7, commands.BucketType.user)
     async def rr(self, ctx):
-        global russianCount
-        if russianCount > 0:
+        if self.russianCount > 0:
             await self.client.say(ctx.message.author.mention + ' *click*')
-            russianCount -= 1
+            self.russianCount -= 1
         else:
             await self.client.say(ctx.message.author.mention + ' **BANG**')
-            russianCount = random.randint(0, 5)
+            self.russianCount = random.randint(0, 5)
 
     @commands.command()
     @commands.cooldown(2, 7, commands.BucketType.user)
