@@ -20,14 +20,14 @@ ideas:
     house rules?
     emoji card display -- :heart: :yellow_heart: :green_heart: :blue_heart:, :zero: :one: ... :nine:
 
-        """
+"""
 
 DEAL_SIZE = 7
 
 class uno:
     def __init__(self, client):
         self.client = client
-        self.lock    = asyncio.Lock()
+        self.lock   = asyncio.Lock()
         self.reset_state()
 
     async def help(self):
@@ -88,6 +88,9 @@ class uno:
             await self.client.say("Too few players left. Ending the game now, sorry!")
 
     async def start(self, ctx):
+        if len(self.players) < 2:
+            await self.client.say("Not enough players. Get at least two to play!")
+            return
         await self.lock.acquire()
         try:
             random.shuffle(self.deck)
@@ -168,11 +171,13 @@ class uno:
             await self.client.say("You need to select a card to play.")
         else:
             try:
-                index = int(args[0][0])
+                index = int(args[0])
             except ValueError:
                 await self.client.say("Try a number, instead.")
+                return
             if index < 0 or index > len(self.hands[player]):
                 await self.client.say("Try a number that makes sense, instead.")
+                return
 
             card = self.hands[player][index - 1]
             top  = self.discard[-1]
@@ -189,13 +194,12 @@ class uno:
                     self.direction = -self.direction
                 elif card[1] == "draw 2":
                     self.turn += self.direction
-                    for times in range(2):
-                        await self.draw(ctx) # TODO fix this to not depend on message author context to force other player to draw
+                    receiver = self.players[self.turn % len(self.players)]
+                    await self.client.send_message(receiver, self.give_cards(receiver, 2))
                 self.discard.append(self.hands[player].pop(index - 1))
                 await self.new_turn()
             finally:
                 self.lock.release()
-
 
     async def draw(self, ctx, *args):
         player = ctx.message.author
@@ -204,19 +208,21 @@ class uno:
         elif player != self.players[self.turn]:
             await self.client.say("Wait for your turn, " + player.name + "!")
         else:
-            if len(self.deck) == 0:
-                await self.lock.acquire()
+            num_cards = 1
+            if args:
                 try:
-                    self.reshuffle()
-                finally:
-                    self.lock.release()
+                    num_cards = int(args[0])
+                except ValueError:
+                    await self.client.say("You can't draw that, try a number instead.")
+                    return
+                if num_cards < 0 or num_cards > 10:
+                    await self.client.say("Try a more reasonable number, instead.")
+                    return
             await self.lock.acquire()
             try:
-                self.hands[player].append(self.deck.pop())
+                msg = self.give_cards(player, num_cards)
             finally:
                 self.lock.release()
-            msg = "You drew:\n"
-            msg += str(len(self.hands[player])) + ": " + self.hands[player][-1][0] +  " " + self.hands[player][-1][1])
             await self.client.send_message(player, msg)
 
     async def hand(self, ctx):
@@ -252,14 +258,37 @@ class uno:
 
 ###################################################################################################
 
+    def card_name(self, card):
+        color_emojis = { "red"   : "heart", 
+                         "yellow": "yellow_heart", 
+                         "green" : "green_heart", 
+                         "blue"  : "blue_heart", 
+                         "wild"  : "gay_pride_flag" }
+        value_emojis = { "0"      : "zero",
+                         "1"      : "one",
+                         "2"      : "two",
+                         "3"      : "three",
+                         "4"      : "four",
+                         "5"      : "five",
+                         "6"      : "six",
+                         "7"      : "seven",
+                         "8"      : "eight",
+                         "9"      : "nine",
+                         "skip"   : "no_entry_sign",
+                         "reverse": "cyclone",
+                         "draw 2" : "exclamation",
+                         "draw 4" : "bangbang" }
+
+        name = ":" + color_emojis[card[0]] + ": :" + value_emojis[card[1]] + ": " + card[0] + " " + card[1]
+        return name
+
     async def send_hand(self, player):
         hand = player.name + " , your current uno hand is:\n"
         for idx, card in enumerate(self.hands[player]):
-            hand += "*" + str(idx + 1) + "*: "
-            # TODO emoji output for cards
-            hand += card[0] + " " + card[1] + "\n"
+            hand += "**" + str(idx + 1) + "**: "
+            hand += self.card_name(card) + "\n"
         await self.client.send_message(player, hand)
-        await self.client.send_message(player, "Top of the discard pile is: " + self.discard[-1][0] + " " + self.discard[-1][1])
+        await self.client.send_message(player, "Top of the discard pile is: " + self.card_name(self.discard[-1]))
 
     async def new_turn(self):
         if not self.lock.locked():
@@ -267,7 +296,23 @@ class uno:
             return
         self.turn = (self.turn + self.direction) % len(self.players)
         await self.send_hand(self.players[self.turn])
-        await self.client.say("Top of the discard pile is: " + self.discard[-1][0] + " " + self.discard[-1][1])
+        await self.client.say("<@" + self.players[self.turn].id + ">, it's your turn!")
+        await self.client.say("Top of the discard pile is: " + self.card_name(self.discard[-1]))
+
+    def give_cards(self, player, num_cards):
+        if not self.lock.locked():
+            print("Not locked -- won't do anything in case of concurrent issues.")
+            return
+        msg = "You drew:\n"
+        cards = []
+        for card in range(num_cards):
+            if len(self.deck) == 0:
+                self.reshuffle()
+            card = self.deck.pop()
+            self.hands[player].append(card)
+            cards.append(card)
+            msg += "*" + str(len(self.hands[player])) + "*: " + self.card_name(card) + "\n"
+        return msg
 
     def reshuffle(self):
         if not self.lock.locked():
