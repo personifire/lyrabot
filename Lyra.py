@@ -60,7 +60,7 @@ async def on_member_remove(member):
 
 @client.event
 async def on_member_join(member):
-    await client.add_roles(member, discord.utils.get(member.server.roles, name = ''))
+    await client.add_roles(member, discord.utils.get(member.server.roles, name = 'everypony'))
 
 
 @client.event
