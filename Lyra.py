@@ -32,10 +32,8 @@ async def on_resumed():
 
 @client.event
 async def on_command_error(err, ctx):
-    if isinstance(err, IGNORED):
+    if isinstance(err, commands.CommandOnCooldown):
         await client.send_message(ctx.message.channel, "You're on cooldown, " + ctx.message.author.display_name)
-    else:
-        print("I just don't know what went wrong!")
 
 @client.event
 async def on_member_remove(member):

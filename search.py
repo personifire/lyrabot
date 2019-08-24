@@ -26,7 +26,7 @@ class search:
         if ctx.message.channel.name != "nsfw":
             if 'grimdark' in tags and 'explicit' in tags:
                 await self.client.say("Absolutely not.")
-            elif 'explicit' in tags:
+            elif 'explicit' in tags or 'questionable' in tags:
                 if 'lyra' in tags:
                     await self.client.say("Hey, at least take me out to dinner first!")
                 else:
@@ -36,7 +36,7 @@ class search:
             elif 'anthro' in tags:
                 await self.client.say("Get some better taste!")
             else:   
-                tags.extend(["-explicit", "-grimdark", "-anthro"])
+                tags.extend(["-explicit", "-questionable", "-grimdark", "-anthro"])
                 for post in self.searcher.query(*tags).sort_by(sort.RANDOM).limit(1):
                     await self.client.say(post.url)
         else: # in nsfw

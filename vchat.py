@@ -21,7 +21,7 @@ class vchat:
         output =""
         output += "*!join* - Joins the user's voice channel\n"
         output += "*!leave* - Leaves the voice channel\n"
-        output += "*!play* [url] OR [\"search term\"] - Plays or queues audio from the url or searched video in the voice channel after a short delay\n"
+        output += "*!vplay* [url] OR [\"search term\"] - Plays or queues audio from the url or searched video in the voice channel after a short delay\n"
         output += "*!pause* - Pauses the audio currently playing in the voice channel\n"
         output += "*!skip [queue number]*  - Ends playback of the selected audio\n"
         output += "      if no number is provided, ends playback of the current audio\n"
@@ -63,12 +63,10 @@ class vchat:
     @commands.command(pass_context=True)
     @commands.cooldown(1, 5, commands.BucketType.server)
     async def vplay(self, ctx):
-
         server = ctx.message.server
 
         if not self.client.is_voice_connected(server) and ctx.message.author.voice.voice_channel:
-            await self.client.join_voice_channel(ctx.message.author.voice.voice_channel)
-            await self.client.change_presence(game=discord.Game(name='ly.radio'))
+            await self.join(ctx)
 
         voice_client = self.client.voice_client_in(server)
 
@@ -93,7 +91,6 @@ class vchat:
                 await self.client.say("You got it " + ctx.message.author.name + ", playing " + player.title)
             else:
                 await self.client.say("Can't do that " + ctx.message.author.name)
-
         else:
             player = await voice_client.create_ytdl_player(url, ytdl_options={'default_search': 'auto'}, before_options = "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5", after=lambda: vchat.check_queue(server.id))
             if player:
