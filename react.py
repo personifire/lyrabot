@@ -1,6 +1,18 @@
 import discord
 from discord.ext import commands
 
+emotes = [  "angery",
+            "blep",
+            "dab",
+            "default",
+            "excite",
+            "floos",
+            "flyra",
+            "lyravator",
+            "scared",
+            "swiggityswooty",
+            "thonk"             ]
+
 class react:
     def __init__(self, client):
         self.client = client
@@ -9,7 +21,8 @@ class react:
     @commands.cooldown(1, 15, commands.BucketType.channel)
     async def react(self):
         output = ""
-        output += "angery, blep, dab, default, excite, floss, flyra, lyravator, scared, swiggityswooty, thonk"
+        for emotename in emotes:
+            output += emotename + ", "
         await self.client.say(output)
     
     async def add_emote(self, react_name, emote_name, ctx):
