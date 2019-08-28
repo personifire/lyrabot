@@ -5,8 +5,8 @@ cffi==1.11.5
 chardet==3.0.4
 requests==2.21.0
 DerPyBooru==0.7.3
-discord.py==0.16.12
-discord.py[voice]==0.16.12
+discord.py==1.2.3
+discord.py[voice]>1.2
 gunicorn==19.9.0
 idna==2.8
 multidict==4.5.2

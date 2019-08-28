@@ -1,2 +1,11 @@
 # Python
 __pycache__*
+
+# Python virtual env
+bin/
+etc/
+lib/
+lib64
+pyvenv.cfg
+share/
+
