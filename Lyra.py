@@ -121,7 +121,7 @@ async def on_message(message):
 
 @client.command()
 @commands.cooldown(1, 45, commands.BucketType.channel)
-async def help():
+async def help(ctx):
     output = ""
     output += "*!avatar [@user]* - Returns a url of the users avatar\n"
     output += "*!bon* - sends a bon back at you\n"
@@ -147,16 +147,16 @@ async def help():
 
 @client.command()
 @commands.cooldown(2, 7, commands.BucketType.user)
-async def bon():
+async def bon(ctx):
     await client.say('bon')
 
-@client.command(pass_context = True)
+@client.command()
 @commands.cooldown(2, 7, commands.BucketType.user)
 async def avatar(ctx):
     await client.send_typing(ctx.message.channel)
     await client.say(ctx.message.mentions[0].avatar_url.replace('webp', 'png'))
 
-@client.command(pass_context = True)
+@client.command()
 @commands.cooldown(2, 7, commands.BucketType.user)
 async def emote(ctx):
     await client.send_typing(ctx.message.channel)
@@ -185,11 +185,11 @@ async def emote(ctx):
         await client.say("*shrugs*")
         print(name + ":")
 
-@client.command(pass_context = True)
+@client.command()
 async def dm(ctx):
     await ctx.message.author.send("bon")
 
-@client.command(pass_context = True)
+@client.command()
 async def nuke(ctx):
     global prepare
     
@@ -207,7 +207,7 @@ async def nuke(ctx):
     else:
         await client.say("You're not the boss of me!")
 
-@client.command(pass_context = True)
+@client.command()
 async def snuggle(ctx):
     if ctx.message.author.id != STAR:
         return
@@ -219,7 +219,7 @@ async def snuggle(ctx):
         status = not status
         await client.change_presence(game=discord.Game(name='her lyre'))
 
-@client.command(pass_context=True)
+@client.command()
 async def rest(ctx):
     if ctx.message.author.id == STAR:
         await client.say("<:sleepytwi:483862389347844116>")
