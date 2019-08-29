@@ -5,7 +5,7 @@ import random
 class fun(commands.Cog):
     def __init__(self, client):
         self.client = client
-        self.star_id = "410660094083334155"
+        self.star_id = 410660094083334155
 
         self.russianCount = random.randint(0, 5)
 
@@ -16,7 +16,8 @@ class fun(commands.Cog):
         if ctx.message.mentions:
             user = ctx.message.mentions[0]
             if self.client.user in ctx.message.mentions:
-                user = self.client.user
+                await ctx.channel.send('but ' + ctx.author.display_name + ', that\'s *lewd!*')
+                return
             elif "www." in ctx.message.content or ".org" in ctx.message.content or ".com" in ctx.message.content or ".xxx" in ctx.message.content:
                 user = ctx.author
         else:
@@ -24,8 +25,8 @@ class fun(commands.Cog):
                 await ctx.channel.send('That\'s a *lot* of boops')
                 return
             user = ctx.author
-        if self.star_id in user.id:
-            await ctx.channel.send('*boops* <@' + self.star_id + '> *sensually*')
+        if self.star_id == user.id:
+            await ctx.channel.send('*boops* <@' + str(self.star_id) + '> *sensually*')
         else:
             await ctx.channel.send('*boops* ' + user.display_name)
 
@@ -81,7 +82,7 @@ class fun(commands.Cog):
             output = "I'd rather not be banished to the moon thank you very much"
         elif not ctx.message.mentions:
             output = output.format(ctx.message.author.display_name)
-        elif self.client.user in ctx.message.mentions or self.star_id in ctx.message.mentions[0].id:
+        elif self.client.user in ctx.message.mentions or self.star_id == ctx.message.mentions[0].id:
             output = output.format(ctx.message.author.display_name)
         elif ctx.author in ctx.message.mentions:
             output = ":doughnut:"
@@ -94,42 +95,43 @@ class fun(commands.Cog):
     async def pop(self, ctx):
         pops = ["glim", "shy", "twi", "rara", "pink", "aj", "dash", "spike", "sun", "lyra"]
         output = "pop/" + random.choice(pops) + ".png"
-        async with ctx.channel.typing(): # may need to do away with async part, we'll see
-            await self.client.send_file(ctx.message.channel, output)
+        async with ctx.channel.typing():
+            await ctx.channel.send(file=discord.File(output, "pop.png"))
 
 
     @commands.command()
     @commands.cooldown(7, 10, commands.BucketType.user)
     async def roll(self, ctx, *args):
-        async with ctx.channel.typing():
-            if not args[0].isdigit() or int(args[0]) <= 0:
-                await self.client.say("Uhm, I don't think I can roll that...")
-                return
+        if not args[0].isdigit() or int(args[0]) <= 0:
+            await ctx.channel.send("Uhm, I don't think I can roll that...")
+            return
 
-            faces = int(args[0])
-            results = [random.randint(1, faces)]
-            message = ctx.author.mention
-            if int(args[0]) > 0:
-                modifier = 0
-                for arg in args[1:]:
-                    if arg[0].lower() == 'x' and arg[1:].isdigit():
-                        for x in range(int(arg[1:])-1):
-                            die = random.randint(1, int(args[0]))
-                            die += modifier
-                            results.append(die)
-                    elif arg[0].lower() == '+' and arg[1:].isdigit():
-                        modifier += int(arg[1:])
-                    elif arg[0].lower() == '-' and arg[1:].isdigit():
-                        modifier += int(arg[1:])
+        faces = int(args[0])
+        results = []
+        message = ctx.author.mention
+        if int(args[0]) > 0:
+            modifier = 0
+            for arg in args[1:]:
+                if arg[0].lower() == 'x' and arg[1:].isdigit():
+                    for x in range(int(arg[1:])-1):
+                        die = random.randint(1, faces)
+                        die += modifier
+                        results.append(die)
+                elif arg[0].lower() == '+' and arg[1:].isdigit():
+                    modifier += int(arg[1:])
+                elif arg[0].lower() == '-' and arg[1:].isdigit():
+                    modifier -= int(arg[1:])
 
-            roll = 0
-            for die in results:
-                roll += die
-            output += ": " + str(roll)
-            if roll <= 0:
-                output += " (rounds to 1)"
-
-            await ctx.channel.send(ctx.author.mention + ': ' + str(ranNum))
+        results.append(random.randint(1, faces) + modifier)
+        roll = results[0]
+        message += " " + str(results[0])
+        for die in results[1:]:
+            roll += die
+            message += ", " + str(die)
+        message += ": " + str(roll)
+        if roll <= 0:
+            message += " (rounds to 1)"
+        await ctx.channel.send(message)
 
 
     @commands.command()
