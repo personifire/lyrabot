@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 import asyncio
+import random
 import sys
 
 #https://discordpy.readthedocs.io/en/latest/api.html#user
@@ -15,9 +16,16 @@ STAR = "410660094083334155"
 EXTENSIONS = ['react', 'fun', 'search', 'vchat', 'uno']
 
 status = True
-prepare = False
 
 loop = asyncio.get_event_loop()
+
+KEY_MAX = 100000000
+key = random.randint(1, KEY_MAX)
+
+def regen_key():
+    global key
+    key = random.randint(1, KEY_MAX)
+    print("newest key: " + str(key))
 
 ######################################################################################################################
 
@@ -30,7 +38,7 @@ async def on_resumed():
     print("Lyra has reconnected")
 
 @client.event
-async def on_command_error(err, ctx):
+async def on_command_error(ctx, err):
     try:
         if isinstance(err, commands.CommandOnCooldown):
             await ctx.message.channel.send("You're on cooldown, " + ctx.message.author.display_name)
@@ -143,69 +151,60 @@ async def help(ctx):
     output += "*!tableflip* - Flips a table\n"
     output += "*!uno* - Displays the list of commands for Uno\n"
     output += "*!vchat* - Displays the list of commands for the voice channel\n"
-    await client.say(output)
+    await ctx.channel.send(output)
 
 @client.command()
 @commands.cooldown(2, 7, commands.BucketType.user)
 async def bon(ctx):
-    await client.say('bon')
+    await ctx.channel.send('bon')
 
 @client.command()
 @commands.cooldown(2, 7, commands.BucketType.user)
 async def avatar(ctx):
-    await client.send_typing(ctx.message.channel)
-    await client.say(ctx.message.mentions[0].avatar_url.replace('webp', 'png'))
+    if len(ctx.message.mentions) == 0:
+        await ctx.channel.send("Mention a user so I know whose avatar to grab!")
+    async with ctx.channel.typing():
+        await ctx.channel.send(ctx.message.mentions[0].avatar_url.replace('webp', 'png'))
 
 @client.command()
 @commands.cooldown(2, 7, commands.BucketType.user)
 async def emote(ctx):
-    await client.send_typing(ctx.message.channel)
-    emotes = list(client.get_all_emojis())
-    i = len(emotes)
-    found = False
     name = ctx.message.content.replace("!emote ", "")
-    name = name.replace(":", "")
-    name = name.replace("<", "")
-    name = name.replace(">", "")
-    name = name.replace(" -anim", "")
-    name = name.replace("-anim", "")
-    for looper in range(10):
-        name = name.replace(str(looper), "")
-        
-    while i > 0 and not found:
-        i -= 1
-        if emotes[i].name == name:
-            found = True
-    if found:
-        if "-anim" in ctx.message.content.lower():
-            await client.say(emotes[i].url.replace("png", "gif"))
-        else:
-            await client.say(emotes[i].url)
+
+    idstart  = name.find(':', name.find(':') + 1) + 1
+    idend    = name.find('>')
+    emote_id = name[idstart:idend]
+
+    if not emote_id.isdigit():
+        await ctx.channel.send("Sorry, not sure if I can find that one!")
+        return
+
+    emote = client.get_emoji(int(emote_id))
+    if emote is None:
+        await ctx.channel.send("Sorry, I can't find that one!")
+        print(ctx.message.content)
     else:
-        await client.say("*shrugs*")
-        print(name + ":")
+        await ctx.channel.send(str(emote.url))
 
 @client.command()
 async def dm(ctx):
     await ctx.message.author.send("bon")
 
 @client.command()
-async def nuke(ctx):
-    global prepare
-    
-    if ctx.message.author.id == STAR:
-        if(prepare):
+async def nuke(ctx, *args):
+    global key
+    if args and args[0].isdigit():
+        if int(args[0]) == key:
             msg = ""
             for i in range(10):
                 msg += "<:dab:531755608467046401>\n"
-            for i in range(10):
-                await client.say(msg)
-            prepare = False
+            for i in range(5):
+                await ctx.channel.send(msg)
         else:
-            await client.say("You're gonna have a bad time. Cont?")
-            prepare = True
+            await ctx.channel.send("Good try!")
     else:
-        await client.say("You're not the boss of me!")
+        await ctx.channel.send("You're gonna have a bad time. You got a key for me?")
+    regen_key()
 
 @client.command()
 async def snuggle(ctx):
@@ -220,14 +219,18 @@ async def snuggle(ctx):
         await client.change_presence(game=discord.Game(name='her lyre'))
 
 @client.command()
-async def rest(ctx):
-    if ctx.message.author.id == STAR:
-        await client.say("<:sleepytwi:483862389347844116>")
-        id = ctx.message.guild.id
-        await client.close()
-        print('Lyra is offline')
-    elif ctx.message.author.id != STAR:
-        await client.say("You're not the boss of me!")
+async def rest(ctx, *args):
+    global key
+    if args and args[0].isdigit():
+        if int(args[0]) == key:
+            await ctx.channel.send("<:sleepytwi:483862389347844116>")
+            id = ctx.message.guild.id
+            await client.close()
+            print('Lyra is offline')
+    else:
+        await ctx.channel.send("Aww, but I'm not tired yet!")
+        regen_key()
+        
 
 ######################################################################################################################
 
