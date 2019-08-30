@@ -3,17 +3,16 @@ from discord.ext import commands
 import derpibooru
 from derpibooru import Search, sort
 
-class search:
+class search(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.searcher = Search(filter_id = 56027) # "everything" filter
 
-    @commands.command(pass_context = True)
+    @commands.command()
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def search(self, ctx, *args):
-        await self.client.send_typing(ctx.message.channel)
-        if not (ctx.message.channel.name == "lyra" or ctx.message.channel.name == "test" or ctx.message.channel.name == "nsfw"):
-            await self.client.say("<#494919888629006356>")
+        if ctx.channel.name == "vchat":
+            await ctx.channel.send("<#494919888629006356>")
             return
 
         tags = []
@@ -23,29 +22,32 @@ class search:
         else:
             tags = [tag.replace("_", " ") for tag in args]
 
-        if ctx.message.channel.name != "nsfw":
+        if not ctx.channel.is_nsfw():
             if 'grimdark' in tags and 'explicit' in tags:
-                await self.client.say("Absolutely not.")
+                await ctx.channel.send("Absolutely not.")
             elif 'explicit' in tags or 'questionable' in tags:
                 if 'lyra' in tags:
-                    await self.client.say("Hey, at least take me out to dinner first!")
+                    await ctx.channel.send("Hey, at least take me out to dinner first!")
                 else:
-                    await self.client.say("Ponies are NOT for sexual ||at least not in this channel||")
+                    await ctx.channel.send("Ponies are NOT for sexual ||at least not in this channel||")
             elif 'grimdark' in tags:
-                await self.client.say("I'd rather not see that")
+                await ctx.channel.send("I'd rather not see that")
             elif 'anthro' in tags:
-                await self.client.say("Get some better taste!")
+                await ctx.channel.send("Get some better taste!")
             else:   
                 tags.extend(["-explicit", "-questionable", "-grimdark", "-anthro"])
                 for post in self.searcher.query(*tags).sort_by(sort.RANDOM).limit(1):
-                    await self.client.say(post.url)
-        else: # in nsfw
+                    await ctx.channel.send(post.url)
+        else: # in nsfw channel
             if 'grimdark' in tags or 'anthro' in tags:
-                await self.client.say("<:ew:532536050350948376>")
+                await ctx.channel.send("<:ew:532536050350948376>")
             else:
-                tags.extend(["-grimdark", "-anthro", "-safe"])
-                for post in self.searcher.query(*tags).sort_by(sort.RANDOM).limit(1):
-                    await self.client.say(post.url)
+                extratags = ["-grimdark", "-anthro"]
+                if 'safe' not in tags:
+                    extratags.append("-safe")
+                tags.extend(extratags)
+            for post in self.searcher.query(*tags).sort_by(sort.RANDOM).limit(1):
+                await ctx.channel.send(post.url)
 
 def setup(client):
     client.add_cog(search(client))
