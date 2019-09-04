@@ -1,99 +1,121 @@
 import discord
 from discord.ext import commands
 
-emotes = [  "angery",
-            "blep",
-            "dab",
-            "default",
-            "excite",
-            "floos",
-            "flyra",
-            "lyravator",
-            "scared",
-            "swiggityswooty",
-            "thonk"             ]
+emotes = [   # emote name         # emote id
+            #("apples",           "<:apples:525139683395764244>"),
+            ("angery",           "<a:ANGERY:525142734684815370>"),
+            ("blep",             "<:blep:532497085254205450>"),
+            ("dab",              "<:dab:531755608467046401>"),
+            ("default",          "<a:default:531762705128751105>"),
+            ("excite",           "<a:excite:531769597108551691>"),
+            ("floss",            "<a:floss:531762332121169930>"),
+            ("flyra",            "<a:flyra:531755302996148237>"),
+            ("lyravator",        "<a:lyravator:531772198910689280>"),
+            ("scared",           "<:scared:532497591426875394>"),
+            ("swiggityswooty",   "<a:swiggityswooty:531779000251580416>"),
+            ("thonk",            "<:thonk:532534756093460481>"),
+         ]
 
-class react:
+class react(commands.Cog):
     def __init__(self, client):
         self.client = client
+    #    self.reacts = []
+    #    # register all the emotes -- works, but adds commands to client instead of cog
+    #    for emote in emotes:
+    #        self.reacts.append(
+    #            commands.command(name = emote[0])( # something usually adds these commands. Maybe a superclass thing?
+    #                commands.cooldown(1, 15, commands.BucketType.channel)(
+    #                    self.emote_func(emote[1])
+    #                )
+    #            )
+    #        )
+    #        client.add_command(self.reacts[-1])
+    #    print(list(map(lambda cmd: cmd.name, self.get_commands())))
+    #    print(list(map(lambda cmd: cmd.name, self.reacts)))
+
+    #def emote_func(self, emote):
+    #    async def emote_command(self, ctx):
+    #        await self.add_emote(emote, ctx)
+    #    return emote_command
+
 
     @commands.command()
     @commands.cooldown(1, 15, commands.BucketType.channel)
     async def react(self):
         output = ""
-        for emotename in emotes:
-            output += emotename + ", "
+        for emote in emotes:
+            output += emote[0] + ", "
         await self.client.say(output)
     
-    async def add_emote(self, react_name, emote_name, ctx):
+    async def add_emote(self, emote_name, ctx):
         if ctx.message.mentions:
             for msg in reversed(self.client.messages):
                 if msg.author == ctx.message.mentions[0]:
-                    await self.client.add_reaction(self.client.messages[i], react_name)
+                    msg.add_reaction(emote_name)
                     return
-            await self.client.say("*shrugs*")
+            await ctx.channel.send("*shrugs*")
         else:
-            await self.client.say(emote_name)
+            await ctx.channel.send(emote_name)
 
-    @commands.command(pass_context = True)
+    @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def apples(self, ctx):
-        await self.add_emote("apples:525139683395764244", "<:apples:525139683395764244>", ctx)
+        await self.add_emote("<:apples:525139683395764244>", ctx)
 
-    @commands.command(pass_context = True)
+    @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def angery(self, ctx):
-        await self.add_emote("ANGERY:525142734684815370", "<a:ANGERY:525142734684815370>", ctx)
+        await self.add_emote("<a:ANGERY:525142734684815370>", ctx)
 
-    @commands.command(pass_context = True)
+    @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def blep(self, ctx):
-        await self.add_emote("blep:532497085254205450", "<:blep:532497085254205450>", ctx)
+        await self.add_emote("<:blep:532497085254205450>", ctx)
 
-    @commands.command(pass_context = True)
+    @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def dab(self, ctx):
-        await self.add_emote("dab:531755608467046401", "<:dab:531755608467046401>", ctx)
+        await self.add_emote("<:dab:531755608467046401>", ctx)
 
-    @commands.command(pass_context = True)
+    @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def default(self, ctx):
-        await self.add_emote("default:531762705128751105", "<a:default:531762705128751105>", ctx)
+        await self.add_emote("<a:default:531762705128751105>", ctx)
 
-    @commands.command(pass_context = True)
+    @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def excite(self, ctx):
-        await self.add_emote("excite:531769597108551691", "<a:excite:531769597108551691>", ctx)
+        await self.add_emote("<a:excite:531769597108551691>", ctx)
 
-    @commands.command(pass_context = True)
+    @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def floss(self, ctx):
-        await self.add_emote("floss:531762332121169930", "<a:floss:531762332121169930>", ctx)
+        await self.add_emote("<a:floss:531762332121169930>", ctx)
 
-    @commands.command(pass_context = True)
+    @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def flyra(self, ctx):
-        await self.add_emote("flyra:531755302996148237", "<a:flyra:531755302996148237>", ctx)
+        await self.add_emote("<a:flyra:531755302996148237>", ctx)
 
-    @commands.command(pass_context = True)
+    @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def lyravator(self, ctx):
-        await self.add_emote("lyravator:531772198910689280", "<a:lyravator:531772198910689280>", ctx)
+        await self.add_emote("<a:lyravator:531772198910689280>", ctx)
 
-    @commands.command(pass_context = True)
+    @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def scared(self, ctx):
-        await self.add_emote("scared:532497591426875394", "<:scared:532497591426875394>", ctx)
+        await self.add_emote("<:scared:532497591426875394>", ctx)
 
-    @commands.command(pass_context = True)
+    @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def swiggityswooty(self, ctx):
-        await self.add_emote("swiggityswooty:531779000251580416", "<a:swiggityswooty:531779000251580416>", ctx)
+        await self.add_emote("<a:swiggityswooty:531779000251580416>", ctx)
 
-    @commands.command(pass_context = True)
+    @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def thonk(self, ctx):
-        await self.add_emote("thonk:532534756093460481", "<:thonk:532534756093460481>", ctx)
+        await self.add_emote("<:thonk:532534756093460481>", ctx)
 
 def setup(client):
     client.add_cog(react(client))
