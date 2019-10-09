@@ -17,10 +17,21 @@ class search(commands.Cog):
 
         tags = []
         joinargs = " ".join(args)
-        if "," in joinargs:
-            tags = [tag.strip() for tag in joinargs.split(",")]
-        else:
+        if "_" in joinargs:
             tags = [tag.replace("_", " ") for tag in args]
+        else:
+            tags = [tag.strip() for tag in joinargs.split(",")]
+
+        # meme joke
+        youremom = ["you're mom", "youre mom", "you'remom", "youremom"]
+        for mom in youremom:
+            try:
+                index = tags.index(mom)
+                tags[index] = "gay"
+            except ValueError:
+                pass
+
+        results = None
 
         if not ctx.channel.is_nsfw():
             if 'grimdark' in tags and 'explicit' in tags:
@@ -36,8 +47,7 @@ class search(commands.Cog):
                 await ctx.channel.send("Get some better taste!")
             else:   
                 tags.extend(["-explicit", "-questionable", "-grimdark", "-anthro"])
-                for post in self.searcher.query(*tags).sort_by(sort.RANDOM).limit(1):
-                    await ctx.channel.send(post.url)
+                results = self.searcher.query(*tags).sort_by(sort.RANDOM).limit(1)
         else: # in nsfw channel
             if 'grimdark' in tags or 'anthro' in tags:
                 await ctx.channel.send("<:ew:532536050350948376>")
@@ -46,8 +56,14 @@ class search(commands.Cog):
                 if 'safe' not in tags:
                     extratags.append("-safe")
                 tags.extend(extratags)
-            for post in self.searcher.query(*tags).sort_by(sort.RANDOM).limit(1):
+            results = self.searcher.query(*tags).sort_by(sort.RANDOM).limit(1)
+        if results is not None:
+            posted = False
+            for post in results:
                 await ctx.channel.send(post.url)
+                posted = True
+            if not posted:
+                await ctx.channel.send('No results for search "' + joinargs + '". Too niche!')
 
 def setup(client):
     client.add_cog(search(client))
