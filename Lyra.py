@@ -14,6 +14,7 @@ client.remove_command('help')
 
 STAR = "410660094083334155"
 EXTENSIONS = ['react', 'fun', 'search', 'vchat', 'uno']
+#EXTENSIONS = ['react', 'fun', 'search', 'uno']
 
 status = True
 
@@ -41,9 +42,9 @@ async def on_resumed():
 async def on_command_error(ctx, err):
     try:
         if isinstance(err, commands.CommandOnCooldown):
-            await ctx.message.channel.send("You're on cooldown, " + ctx.message.author.display_name)
+            await ctx.channel.send("You're on cooldown, " + ctx.author.display_name)
         else:
-            await ctx.message.channel.send("Something bad happened! I can't do that, sorry.")
+            await ctx.channel.send("Something bad happened! I can't do that, sorry.")
             print(err)
     except Exception as e:
         print("Exception in on_command_error: \n" + str(e))

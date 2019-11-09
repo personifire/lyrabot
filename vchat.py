@@ -3,21 +3,55 @@ from discord.ext import commands
 import discord.errors
 import youtube_dl
 
-#https://www.youtube.com/watch?v=12_WnaPmPI0
+ytdl_format_options = {
+    'format': 'bestaudio/best',
+    'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
+    'restrictfilenames': True,
+    'noplaylist': True,
+    'nocheckcertificate': True,
+    'ignoreerrors': False,
+    'logtostderr': False,
+    'quiet': True,
+    'no_warnings': True,
+    'default_search': 'auto',
+    'source_address': '0.0.0.0' # bind to ipv4 since ipv6 addresses cause issues sometimes
+}
 
-class vchat:
+ffmpeg_options = {
+    'options': '-vn'
+}
+
+ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
+
+class YTDLSource(discord.PCMVolumeTransformer):
+    def __init__(self, source, *, data, volume=0.25):
+        super().__init__(source, volume)
+
+        self.data = data
+
+        self.title = data.get('title')
+        self.url = data.get('url')
+
+    @classmethod
+    async def from_url(cls, url, *, loop=None, stream=False):
+        loop = loop or asyncio.get_event_loop()
+        data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=not stream))
+
+        if 'entries' in data:
+            # take first item from a playlist
+            data = data['entries'][0]
+
+        filename = data['url'] if stream else ytdl.prepare_filename(data)
+        return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
+
+class vchat(commands.Cog):
     def __init__(self, client):
         self.client = client
-
-    global players
-    players = {}
-    global queues
-    queues = {}
-
+        self.queue = {}
 
     @commands.command()
-    @commands.cooldown(1, 15, commands.BucketType.server)
-    async def vchat(self):
+    @commands.cooldown(1, 10, commands.BucketType.guild)
+    async def vchat(self, ctx):
         output =""
         output += "*!join* - Joins the user's voice channel\n"
         output += "*!leave* - Leaves the voice channel\n"
@@ -27,125 +61,133 @@ class vchat:
         output += "      if no number is provided, ends playback of the current audio\n"
         output += "*!resume* - Resumes playback of the current audio\n"
         output += "*!queue* - Displays the audio currently in the queue\n"
-        await self.client.say(output)
+        await ctx.channel.send(output)
 
 
-    def check_queue(id):
-        global queues
-        players[id] = queues[id].pop(0)
-        players[id].volume = 0.25
-        players[id].start()
+    async def join_channel(self, ctx):
+        if ctx.author.voice and ctx.author.voice.channel:
+            channel = ctx.author.voice.channel
+
+            if ctx.voice_client is not None:
+                await ctx.voice_client.move_to(channel)
+            else:
+                self.queue[ctx.guild.id] = []
+                vc = await channel.connect()
+                await self.client.change_presence(activity=discord.Game(name='ly.radio'))
+
+            print("  joined vc. queue is: " + str(self.queue))
+        else:
+            await ctx.channel.send("*shrugs*")
 
 
-    @commands.command(pass_context=True)
-    @commands.cooldown(1, 3, commands.BucketType.server)
+
+    @commands.command()
+    @commands.cooldown(1, 3, commands.BucketType.guild)
     async def join(self, ctx):
-        if not self.client.is_voice_connected(ctx.message.server) and ctx.message.author.voice.voice_channel:
-            await self.client.join_voice_channel(ctx.message.author.voice.voice_channel)
-            await self.client.change_presence(game=discord.Game(name='ly.radio'))
-        else:
-            await self.client.say("*shrugs*")
+        await self.join_channel(ctx)
 
 
-    @commands.command(pass_context=True)
-    @commands.cooldown(1, 15, commands.BucketType.server)
+
+    @commands.command()
+    @commands.cooldown(1, 3, commands.BucketType.guild)
     async def leave(self, ctx):
-        server = ctx.message.server
-        if self.client.is_voice_connected(server):
-            voice_client = self.client.voice_client_in(server)
-            await voice_client.disconnect()
-            await self.client.change_presence(game=discord.Game(name='her lyre'))
+        if ctx.voice_client is not None:
+            del self.queue[ctx.guild.id]
+            print("  left vc. queue is: " + str(self.queue))
+
+            await ctx.voice_client.disconnect()
+            print("disconnected from vc")
+            await self.client.change_presence(activity=discord.Game(name='her lyre'))
         else:
-            await self.client.say("I'm not even in a voice channel though...")
+            await ctx.channel.send("I'm not even in a voice channel though...")
 
 
 
-    @commands.command(pass_context=True)
-    @commands.cooldown(1, 5, commands.BucketType.server)
-    async def vplay(self, ctx):
-        server = ctx.message.server
+    def play_next(self, ctx, err=None):
+        if err:
+            print(err)
+            ctx.channel.send("Something went wrong!")
 
-        if not self.client.is_voice_connected(server) and ctx.message.author.voice.voice_channel:
-            await self.join(ctx)
-
-        voice_client = self.client.voice_client_in(server)
-
-        await self.client.say("Searching...")
-        await self.client.send_typing(ctx.message.channel)
-
-        message = []
-        message = ctx.message.content.split()
-        if len(message) > 1:
-            counter = 1
-            url = ""
-            while(counter < len(message)):
-                  url += str(" " + message[counter])
-                  counter += 1
-
-        if server.id not in players or not players[server.id].is_playing():
-            player = await voice_client.create_ytdl_player(url, ytdl_options={'default_search': 'auto'}, before_options = "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5", after=lambda: vchat.check_queue(server.id))
-            if player:
-                players[server.id] = player
-                players[server.id].volume = 0.25
-                players[server.id].start()
-                await self.client.say("You got it " + ctx.message.author.name + ", playing " + player.title)
-            else:
-                await self.client.say("Can't do that " + ctx.message.author.name)
+        if len(self.queue[ctx.guild.id]) > 0:
+            player = self.queue[ctx.guild.id].pop(0)
+            ctx.voice_client.play(player, after=lambda e: self.play_next(ctx, e))
         else:
-            player = await voice_client.create_ytdl_player(url, ytdl_options={'default_search': 'auto'}, before_options = "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5", after=lambda: vchat.check_queue(server.id))
+            pass # done playing
+
+
+
+    @commands.command()
+    async def vplay(self, ctx, *search):
+        if ctx.voice_client is None:
+            await ctx.channel.send("Tell me to join first!")
+            return
+
+        search = " ".join(search)
+        server = ctx.guild
+
+        if ctx.author.voice and ctx.author.voice.channel:
+            await self.join_channel(ctx)
+
+        voice_client = ctx.voice_client
+
+        url = search
+        await ctx.channel.send("Searching...")
+        async with ctx.typing():
+            player = await YTDLSource.from_url(url, loop=self.client.loop)
             if player:
-                if server.id in queues:
-                    queues[server.id].append(player)
-                else:
-                    queues[server.id] = [player]
-                await self.client.say("Gotcha, queueing " + player.title + ", " + ctx.message.author.name)
+                await ctx.channel.send("Gotcha, queueing " + player.title + ", " + ctx.author.name)
+                self.queue[ctx.guild.id].append(player)
             else:
-                await self.client.say("Can't do that " + ctx.message.author.name)
+                await ctx.channel.send("Can't do that " + ctx.message.author.name)
+
+            if not ctx.voice_client.is_playing() and not ctx.voice_client.is_paused():
+                self.play_next(ctx)
 
 
-    @commands.command(pass_context=True)
-    @commands.cooldown(1, 3, commands.BucketType.server)
+
+    @commands.command()
+    @commands.cooldown(1, 3, commands.BucketType.guild)
     async def pause(self, ctx):
-        id = ctx.message.server.id
-        players[id].pause()
+        if ctx.voice_client and ctx.voice_client.is_playing() and not ctx.voice_client.is_paused():
+            ctx.voice_client.pause()
+        else:
+            await ctx.channel.send("Can't pause if a song isn't playing!")
 
 
-    @commands.command(pass_context=True)
-    @commands.cooldown(1, 1, commands.BucketType.server)
+    @commands.command()
+    @commands.cooldown(1, 3, commands.BucketType.guild)
+    async def resume(self, ctx):
+        if ctx.voice_client and ctx.voice_client.is_paused():
+            ctx.voice_client.resume()
+        else:
+            await ctx.channel.send("Can't resume if a song isn't paused!")
+
+
+    @commands.command()
+    @commands.cooldown(1, 2, commands.BucketType.guild)
     async def skip(self, ctx, index = 0):
         if index == 0:
-            await self.client.say("Skipping " + players[ctx.message.server.id].title)
-            players[ctx.message.server.id].stop()
-        elif index > 0 and ctx.message.server.id in queues:
-            await self.client.say("Removing " + str(index) + ": " + queues[ctx.message.server.id][index-1].title)
-            del queues[ctx.message.server.id][index-1]
+            await self.client.say("Skipping " + ctx.voice_client.title)
+            ctx.voice_client.stop()
+        elif index > 0 and ctx.voice_client in self.queue and len(self.queue[ctx.guild.id]) > index:
+            await self.client.say("Removing " + str(index) + ": " + self.queue[ctx.guild.id][index-1].title)
+            del self.queue[ctx.guild.id][index - 1]
             
 
-    @commands.command(pass_context=True)
-    @commands.cooldown(1, 3, commands.BucketType.server)
-    async def resume(self, ctx):
-        id = ctx.message.server.id
-        players[id].resume()
-
-
-    @commands.command(pass_context = True)
-    @commands.cooldown(1, 5, commands.BucketType.server)
+    @commands.command()
+    @commands.cooldown(1, 5, commands.BucketType.guild)
     async def queue(self, ctx):
-        server = ctx.message.server.id
         output = ""
-        counter = 1
-        if server in players:
-            output += "Now Playing: " + players[server].title + "\n"
-        if server in queues:
-            for queued in queues[server]:
-                output += str(counter) + ": " + queued.title + ", " + str(queued.duration) + "s\n"
-                counter += 1
-        if output != "":
-            await self.client.say(output)
-        else:
-            await self.client.say("No songs in queue")
-                
 
-            
+        if ctx.voice_client in self.queue:
+            for index, queued in self.queue[ctx.guild.id]:
+                output += str(index + 1) + ": " + queued.title + ", " + str(queued.duration) + "s\n"
+        if output != "":
+            await ctx.channel.send(output)
+        else:
+            await ctx.channel.send("No songs in queue")
+
+
+
 def setup(client):
     client.add_cog(vchat(client))
