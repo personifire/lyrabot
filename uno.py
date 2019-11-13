@@ -157,7 +157,7 @@ class uno(commands.Cog):
                     str(len(self.stops)) + "/" + str(votestop_threshold) + " stop votes received.")
             await self.debug_print("... stop votes: " + str(list(map(lambda p: p.name, self.stops))), ctx)
 
-            if len(self.stops) > votestop_threshold:
+            if len(self.stops) >= votestop_threshold:
                 await self.debug_print("... stopping game", ctx)
                 self.end_game()
                 await ctx.channel.send("Stop votes received! Game is ending.")
@@ -194,9 +194,11 @@ class uno(commands.Cog):
                 await self.debug_print("... kick votes: " + str(list(map(lambda p: p.name, self.kicks[player]))), ctx)
 
                 if len(self.kicks[player]) >= votekick_threshold:
-                    ctx.channel.send("Removing " + player.name + " from the game now. Sorry, bud!")
-                    await self.debug_print("... removing player" + player.name, ctx)
+                    await ctx.channel.send("Removing " + player.name + " from the game now. Sorry, bud!")
+                    await self.debug_print("... removing player " + player.name, ctx)
                     self.remove_player(player)
+                    self.turn -= self.direction
+                    self.new_turn(ctx)
         if len(self.players) <= 1:
             await self.debug_print("... attempting to end game", ctx)
             self.end_game()
