@@ -33,7 +33,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
         self.url = data.get('url')
 
     @classmethod
-    async def from_url(cls, url, *, loop=None, stream=False):
+    async def from_url(cls, url, *, loop=None, stream=True):
         loop = loop or asyncio.get_event_loop()
         data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=not stream))
 
@@ -68,14 +68,13 @@ class vchat(commands.Cog):
         if ctx.author.voice and ctx.author.voice.channel:
             channel = ctx.author.voice.channel
 
-            if ctx.voice_client is not None:
-                await ctx.voice_client.move_to(channel)
-            else:
+            if ctx.voice_client is None:
                 self.queue[ctx.guild.id] = []
                 vc = await channel.connect()
+                print("connected to vc")
                 await self.client.change_presence(activity=discord.Game(name='ly.radio'))
-
-            print("  joined vc. queue is: " + str(self.queue))
+            elif ctx.voice_client.channel != channel:
+                await ctx.voice_client.move_to(channel)
         else:
             await ctx.channel.send("*shrugs*")
 
@@ -93,8 +92,6 @@ class vchat(commands.Cog):
     async def leave(self, ctx):
         if ctx.voice_client is not None:
             del self.queue[ctx.guild.id]
-            print("  left vc. queue is: " + str(self.queue))
-
             await ctx.voice_client.disconnect()
             print("disconnected from vc")
             await self.client.change_presence(activity=discord.Game(name='her lyre'))
@@ -120,7 +117,7 @@ class vchat(commands.Cog):
     async def vplay(self, ctx, *search):
         if ctx.voice_client is None:
             await ctx.channel.send("Tell me to join first!")
-            return
+            return   
 
         search = " ".join(search)
         server = ctx.guild
@@ -167,10 +164,10 @@ class vchat(commands.Cog):
     @commands.cooldown(1, 2, commands.BucketType.guild)
     async def skip(self, ctx, index = 0):
         if index == 0:
-            await self.client.say("Skipping " + ctx.voice_client.title)
+            await ctx.channel.send("Skipping current song")
             ctx.voice_client.stop()
         elif index > 0 and ctx.voice_client in self.queue and len(self.queue[ctx.guild.id]) > index:
-            await self.client.say("Removing " + str(index) + ": " + self.queue[ctx.guild.id][index-1].title)
+            await ctx.channel.send("Removing " + str(index) + ": " + self.queue[ctx.guild.id][index-1].title)
             del self.queue[ctx.guild.id][index - 1]
             
 
