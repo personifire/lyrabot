@@ -14,7 +14,6 @@ client.remove_command('help')
 
 STAR = "410660094083334155"
 EXTENSIONS = ['react', 'fun', 'search', 'vchat', 'uno']
-#EXTENSIONS = ['react', 'fun', 'search', 'uno']
 
 status = True
 
@@ -51,14 +50,19 @@ async def on_command_error(ctx, err):
 
 @client.event
 async def on_member_remove(member):
+    lyra = None
     for channel in member.guild.channels:
         if channel.name == "lyra":
             lyra = channel
-    await lyra.send(member.display_name + ' has left the server')
+    if lyra is not None:
+        await lyra.send(member.display_name + ' has left the server')
+    else:
+        print(member.display_name + "left server: ")
+        print(member.guild)
 
 @client.event
 async def on_member_join(member):
-    await client.add_roles(member, discord.utils.get(member.guild.roles, name = 'everypony'))
+    await member.add_roles(discord.utils.get(member.guild.roles, name = 'everypony'))
 
 @client.event
 async def on_message(message):
