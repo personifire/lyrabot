@@ -173,11 +173,12 @@ class vchat(commands.Cog):
     async def queue(self, ctx):
         output = ""
 
-        if ctx.voice_client in self.queue:
+        if ctx.guild.id in self.queue:
             for index, queued in self.queue[ctx.guild.id]:
                 output += str(index + 1) + ": " + queued.title + ", " + str(queued.duration) + "s\n"
         else:
             await ctx.channel.send("Am I even in vchat?")
+            return
         if output != "":
             await ctx.channel.send(output)
         else:
