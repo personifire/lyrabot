@@ -175,7 +175,7 @@ class vchat(commands.Cog):
 
         if ctx.guild.id in self.queue:
             for index, queued in enumerate(self.queue[ctx.guild.id]):
-                output += str(index + 1) + ": " + queued.title + ", " + str(queued.duration) + "s\n"
+                output += str(index + 1) + ": " + queued.title + "\n"
         else:
             await ctx.channel.send("Am I even in vchat?")
             return
