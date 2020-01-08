@@ -91,9 +91,10 @@ class vchat(commands.Cog):
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.guild)
     async def leave(self, ctx):
-        if ctx.voice_client is not None:
+        if ctx.voice_client is not None and ctx.guild.id in self.queue:
             del self.queue[ctx.guild.id]
             await ctx.voice_client.disconnect()
+            await ctx.channel.send("Later!")
             print("disconnected from vc")
             await self.client.change_presence(activity=discord.Game(name='her lyre'))
         else:
@@ -167,7 +168,7 @@ class vchat(commands.Cog):
         if index == 0:
             await ctx.channel.send("Skipping current song")
             ctx.voice_client.stop()
-        elif index > 0 and len(self.queue[ctx.guild.id]) > index:
+        elif index > 0 and len(self.queue[ctx.guild.id]) >= index:
             await ctx.channel.send("Removing " + str(index) + ": " + self.queue[ctx.guild.id][index-1].title)
             del self.queue[ctx.guild.id][index - 1]
         else:
