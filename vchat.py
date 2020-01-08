@@ -125,6 +125,10 @@ class vchat(commands.Cog):
 
         voice_client = ctx.voice_client
 
+        if voice_client is None or ctx.guild.id not in self.queue:
+            await ctx.channel.send("I'm not really feeling up to it...")
+            return
+
         url = search
         await ctx.channel.send("Searching...")
         async with ctx.typing():
