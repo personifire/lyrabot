@@ -160,12 +160,18 @@ class vchat(commands.Cog):
     @commands.command()
     @commands.cooldown(1, 2, commands.BucketType.guild)
     async def skip(self, ctx, index = 0):
+        if ctx.guild.id not in self.queue:
+            await ctx.channel.send("lol good one")
+            return
+
         if index == 0:
             await ctx.channel.send("Skipping current song")
             ctx.voice_client.stop()
-        elif index > 0 and ctx.voice_client in self.queue and len(self.queue[ctx.guild.id]) > index:
+        elif index > 0 and len(self.queue[ctx.guild.id]) > index:
             await ctx.channel.send("Removing " + str(index) + ": " + self.queue[ctx.guild.id][index-1].title)
             del self.queue[ctx.guild.id][index - 1]
+        else:
+            await ctx.channel.send("Y'know, I'm not really sure what that number means...")
             
 
     @commands.command()
