@@ -474,7 +474,7 @@ class uno(commands.Cog):
             if player in self.kicks:
                 del self.kicks[player]
             for votekick in self.kicks:
-                if player in votekick:
+                if player in self.kicks[votekick]:
                     self.kicks[votekick].remove(player)
             if player in self.stops:
                 self.stops.remove(player)

@@ -7,7 +7,7 @@ emotes = [   # emote name         # emote id
             ("blep",             "<:blep:532497085254205450>"),
             ("dab",              "<:dab:531755608467046401>"),
             ("default",          "<a:default:531762705128751105>"),
-            ("excite",           "<a:excite:531769597108551691>"),
+            #("excite",           "<a:excite:531769597108551691>"),
             ("floss",            "<a:floss:531762332121169930>"),
             ("flyra",            "<a:flyra:531755302996148237>"),
             ("lyravator",        "<a:lyravator:531772198910689280>"),
@@ -82,10 +82,10 @@ class react(commands.Cog):
     async def default(self, ctx):
         await self.add_emote("<a:default:531762705128751105>", ctx)
 
-    @commands.command()
-    @commands.cooldown(1, 3, commands.BucketType.user)
-    async def excite(self, ctx):
-        await self.add_emote("<a:excite:531769597108551691>", ctx)
+    #@commands.command()
+    #@commands.cooldown(1, 3, commands.BucketType.user)
+    #async def excite(self, ctx):
+    #    await self.add_emote("<a:excite:531769597108551691>", ctx)
 
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.user)

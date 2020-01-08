@@ -5,6 +5,7 @@ import youtube_dl
 
 ytdl_format_options = {
     'format': 'bestaudio/best',
+    'buffersize': 4096,
     'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
     'restrictfilenames': True,
     'noplaylist': True,
@@ -55,7 +56,7 @@ class vchat(commands.Cog):
         output =""
         output += "*!join* - Joins the user's voice channel\n"
         output += "*!leave* - Leaves the voice channel\n"
-        output += "*!vplay* [url] OR [\"search term\"] - Plays or queues audio from the url or searched video in the voice channel after a short delay\n"
+        output += "*!play* [url] OR [\"search term\"] - Plays or queues audio from the url or searched video in the voice channel after a short delay\n"
         output += "*!pause* - Pauses the audio currently playing in the voice channel\n"
         output += "*!skip [queue number]*  - Ends playback of the selected audio\n"
         output += "      if no number is provided, ends playback of the current audio\n"
@@ -103,8 +104,7 @@ class vchat(commands.Cog):
     def play_next(self, ctx, err=None):
         if err:
             print(err)
-            ctx.channel.send("Something went wrong!")
-
+            #await ctx.channel.send("Something went wrong!")
         if len(self.queue[ctx.guild.id]) > 0:
             player = self.queue[ctx.guild.id].pop(0)
             ctx.voice_client.play(player, after=lambda e: self.play_next(ctx, e))
@@ -113,12 +113,9 @@ class vchat(commands.Cog):
 
 
 
+    # dirty copy/paste job to make this an alias for !play
     @commands.command()
     async def vplay(self, ctx, *search):
-        if ctx.voice_client is None:
-            await ctx.channel.send("Tell me to join first!")
-            return   
-
         search = " ".join(search)
         server = ctx.guild
 
@@ -179,6 +176,8 @@ class vchat(commands.Cog):
         if ctx.voice_client in self.queue:
             for index, queued in self.queue[ctx.guild.id]:
                 output += str(index + 1) + ": " + queued.title + ", " + str(queued.duration) + "s\n"
+        else:
+            await ctx.channel.send("Am I even in vchat?")
         if output != "":
             await ctx.channel.send(output)
         else:

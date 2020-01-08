@@ -12,7 +12,7 @@ Client = discord.Client(status = "her lyre")
 client = commands.Bot(command_prefix = '!')
 client.remove_command('help')
 
-STAR = "410660094083334155"
+STAR = 410660094083334155
 EXTENSIONS = ['react', 'fun', 'search', 'vchat', 'uno']
 
 status = True
@@ -62,7 +62,9 @@ async def on_member_remove(member):
 
 @client.event
 async def on_member_join(member):
-    await member.add_roles(discord.utils.get(member.guild.roles, name = 'everypony'))
+    role = discord.utils.get(member.guild.roles, name = 'everypony')
+    if role:
+        await member.add_roles(role)
 
 @client.event
 async def on_message(message):
@@ -88,8 +90,8 @@ async def on_message(message):
                 await message.channel.send("<:dab:531755608467046401>")
             elif "default" in new:
                 await message.channel.send("<a:default:531762705128751105>")
-            elif "excite" in new:
-                await message.channel.send("<a:excite:525138734145077259>")
+            #elif "excite" in new:
+                #await message.channel.send("<a:excite:525138734145077259>")
             elif "flyra" in new:
                 await message.channel.send("<a:flyra:531755302996148237>")
             elif "lyravator" in new:
@@ -169,7 +171,7 @@ async def avatar(ctx):
     if len(ctx.message.mentions) == 0:
         await ctx.channel.send("Mention a user so I know whose avatar to grab!")
     async with ctx.channel.typing():
-        await ctx.channel.send(ctx.message.mentions[0].avatar_url.replace('webp', 'png'))
+        await ctx.channel.send(ctx.message.mentions[0].avatar_url)
 
 @client.command()
 @commands.cooldown(2, 7, commands.BucketType.user)
@@ -196,6 +198,33 @@ async def dm(ctx):
     await ctx.message.author.send("bon")
 
 @client.command()
+async def newkey(ctx):
+    regen_key()
+    await ctx.channel.send("New key generated!")
+
+@client.command()
+async def python_exec(ctx, *args):
+    foo = []
+    command = "foo.append(ctx.channel.send('hi'))"
+    exec(command, globals(), locals())
+    await foo[0]()
+    return
+
+    global key
+    if args and args[0].isdigit():
+        command = ctx.message.content
+        key_str = str(key)
+        keyposition = command.find(key_str)
+        if keyposition != -1:
+            command = command[keyposition + len(key_str):].lstrip()
+            exec(command, globals(), locals())
+        else:
+            await ctx.channel.send("Good try!")
+    else:
+        await ctx.channel.send("Aha. No, you're gonna need a key for that one.")
+    regen_key()
+
+@client.command()
 async def nuke(ctx, *args):
     global key
     if args and args[0].isdigit():
@@ -210,6 +239,18 @@ async def nuke(ctx, *args):
     else:
         await ctx.channel.send("You're gonna have a bad time. You got a key for me?")
     regen_key()
+
+@client.command()
+async def reload(ctx, *args):
+    global key
+    if args and args[0].isdigit() and int(args[0]) == key:
+        await ctx.channel.send("Alright, reloading!")
+        for extension in EXTENSIONS:
+            client.reload_extension(extension)
+    else:
+        await ctx.channel.send("naaaaaah")
+    regen_key()
+
 
 @client.command()
 async def snuggle(ctx):
@@ -228,7 +269,8 @@ async def rest(ctx, *args):
     global key
     if args and args[0].isdigit():
         if int(args[0]) == key:
-            await ctx.channel.send("<:sleepytwi:483862389347844116>")
+            sleepytwi = discord.utils.get(client.emojis, name = 'sleepytwi')
+            await ctx.channel.send(sleepytwi)
             id = ctx.message.guild.id
             await client.close()
             print('Lyra is offline')

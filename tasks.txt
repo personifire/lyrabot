@@ -17,7 +17,7 @@ TO REVISIT
   react.py
     Figure out how to make it automatically update what commands are available
   vchat.py
-    ... Triage required.
+    get it working better for unexpected disconnects
 
 SMALL FEATURES
   time zone converter
