@@ -42,6 +42,8 @@ async def on_command_error(ctx, err):
     try:
         if isinstance(err, commands.CommandOnCooldown):
             await ctx.channel.send("You're on cooldown, " + ctx.author.display_name)
+        elif isinstance(err, commands.CommandNotFound):
+            await ctx.channel.send("I don't think that's something I can do...")
         else:
             await ctx.channel.send("Something bad happened! I can't do that, sorry.")
             print(err)

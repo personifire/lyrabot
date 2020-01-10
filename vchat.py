@@ -73,7 +73,7 @@ class vchat(commands.Cog):
                 self.queue[ctx.guild.id] = []
                 vc = await channel.connect()
                 print("connected to vc")
-                await self.client.change_presence(activity=discord.Game(name='ly.radio'))
+                await self.client.change_presence(activity=discord.Game('ly.radio'))
             elif ctx.voice_client.channel != channel:
                 await ctx.voice_client.move_to(channel)
         else:
@@ -96,7 +96,7 @@ class vchat(commands.Cog):
             await ctx.voice_client.disconnect()
             await ctx.channel.send("Later!")
             print("disconnected from vc")
-            await self.client.change_presence(activity=discord.Game(name='her lyre'))
+            await self.client.change_presence(activity=discord.Game('her lyre'))
         else:
             await ctx.channel.send("I'm not even in a voice channel though...")
 
@@ -126,7 +126,7 @@ class vchat(commands.Cog):
         voice_client = ctx.voice_client
 
         if voice_client is None or ctx.guild.id not in self.queue:
-            await ctx.channel.send("I'm not really feeling up to it...")
+            await ctx.channel.send("Maybe if I were already in vchat, but I'm not feeling it...")
             return
 
         url = search
