@@ -23,17 +23,14 @@ ideas:
 
 DEAL_SIZE = 7
 
-class uno(commands.Cog):
+class cog_Uno(commands.Cog):
     def __init__(self, client):
         self.lock       = asyncio.Lock()
         self.debug      = False
         self.call_level = 0
         self.reset_state()
 
-    async def help(self, ctx):
-        await self.debug_print("help entered", ctx)
-        self.call_level += 1
-        # remember to update uno() for new commands
+    def helpstr(self):
         helpstr  = "```"
         helpstr += "!uno [help]             Prints this message\n"
         helpstr += "!uno join               Joins the lobby\n"
@@ -45,10 +42,22 @@ class uno(commands.Cog):
         helpstr += "!uno draw [num]         Draws cards from the deck\n"
         helpstr += "!uno hand               Tells you what cards are in your hand\n"
         helpstr += "```"
-        await ctx.channel.send(helpstr)
+        return helpstr
 
+    @commands.group(invoke_without_command=False)
+    async def uno(self, ctx):
+        if ctx.invoked_subcommand is None:
+            await ctx.channel.send(self.helpstr())
+        self.call_level = 0
+
+    @uno.command(name="help")
+    async def uno_help(self, ctx):
+        await self.debug_print("help entered", ctx)
+        self.call_level += 1
+        await ctx.channel.send(self.helpstr())
         self.call_level -= 1
 
+    @uno.command()
     async def join(self, ctx):
         await self.debug_print("join entered...", ctx)
         self.call_level += 1
@@ -70,6 +79,7 @@ class uno(commands.Cog):
             await self.debug_print("... player list: " + str(list(map(lambda p: p.name, self.players))), ctx)
         self.call_level -= 1
 
+    @uno.command()
     async def leave(self, ctx):
         await self.debug_print("leave entered...", ctx)
         self.call_level += 1
@@ -93,6 +103,7 @@ class uno(commands.Cog):
             await self.debug_print("... in-game status: " + str(self.in_game), ctx)
         self.call_level -= 1
 
+    @uno.command()
     async def start(self, ctx):
         await self.debug_print("start entered...", ctx)
         self.call_level += 1
@@ -135,6 +146,7 @@ class uno(commands.Cog):
 
         self.call_level -= 1
 
+    @uno.command()
     async def stop(self, ctx):
         await self.debug_print("stop entered...", ctx)
         self.call_level += 1
@@ -163,6 +175,7 @@ class uno(commands.Cog):
                 await ctx.channel.send("Stop votes received! Game is ending.")
         self.call_level -= 1
 
+    @uno.command()
     async def kick(self, ctx, *args):
         await self.debug_print("kick entered...", ctx)
         self.call_level += 1
@@ -206,6 +219,7 @@ class uno(commands.Cog):
             await self.debug_print("... in-game status: " + str(self.in_game), ctx)
         self.call_level -= 1
 
+    @uno.command()
     async def play(self, ctx, *args):
         await self.debug_print("play entered...", ctx)
         self.call_level += 1
@@ -272,6 +286,7 @@ class uno(commands.Cog):
             await self.new_turn(ctx)
         self.call_level -= 1
 
+    @uno.command()
     async def draw(self, ctx, *args):
         await self.debug_print("draw entered...", ctx)
         self.call_level += 1
@@ -308,6 +323,7 @@ class uno(commands.Cog):
             await player.send(msg)
         self.call_level -= 1
 
+    @uno.command()
     async def hand(self, ctx):
         await self.debug_print("hand entered...", ctx)
         self.call_level += 1
@@ -323,44 +339,10 @@ class uno(commands.Cog):
 
         self.call_level -= 1
 
+    @uno.command()
     async def debug(self, ctx):
         await self.debug_print("debug entered...", ctx)
         self.debug = not self.debug
-
-    @commands.command(pass_context = True)
-    async def uno(self, ctx, *args):
-        await self.lock.acquire()
-        try:
-            if args:
-                # remember to update help() for new commands
-                if   args[0] == "help":
-                    await self.help(ctx)
-                elif args[0] == "join":
-                    await self.join(ctx)
-                elif args[0] == "leave":
-                    await self.leave(ctx)
-                elif args[0] == "start":
-                    await self.start(ctx)
-                elif args[0] == "stop":
-                    await self.stop(ctx)
-                elif args[0] == "kick":
-                    await self.kick(ctx, *args[1:])
-                elif args[0] == "play":
-                    await self.play(ctx, *args[1:])
-                elif args[0] == "draw":
-                    await self.draw(ctx, *args[1:])
-                elif args[0] == "hand":
-                    await self.hand(ctx)
-                elif args[0] == "debug":
-                    await self.debug(ctx)
-                else:
-                    await ctx.channel.send("Unknown uno command '" + args[0] + '. Try "!uno help"')
-            else:
-                await self.help(ctx)
-            self.call_level = 0
-            await self.debug_print("end command", ctx)
-        finally:
-            self.lock.release()
 
 ###################################################################################################
 
@@ -506,4 +488,4 @@ class uno(commands.Cog):
         self.deck += [("wild", wildtype)   for wildtype in wilds]
 
 def setup(client):
-    client.add_cog(uno(client))
+    client.add_cog(cog_Uno(client))

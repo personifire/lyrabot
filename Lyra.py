@@ -39,6 +39,8 @@ async def on_resumed():
 
 @client.event
 async def on_command_error(ctx, err):
+    print("--- caught exception ---")
+    print(err)
     try:
         if isinstance(err, commands.CommandOnCooldown):
             await ctx.channel.send("You're on cooldown, " + ctx.author.display_name)
