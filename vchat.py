@@ -80,6 +80,16 @@ class vchat(commands.Cog):
             await ctx.channel.send("*shrugs*")
 
 
+    async def leave_channel(self, guild):
+        if guild.voice_client is not None and guild.id in self.queue:
+            del self.queue[guild.id]
+            await guild.voice_client.disconnect()
+            print("disconnected from vc")
+            await self.client.change_presence(activity=discord.Game('her lyre'))
+            return True
+        else:
+            return False
+
 
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.guild)
@@ -87,19 +97,13 @@ class vchat(commands.Cog):
         await self.join_channel(ctx)
 
 
-
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.guild)
     async def leave(self, ctx):
-        if ctx.voice_client is not None and ctx.guild.id in self.queue:
-            del self.queue[ctx.guild.id]
-            await ctx.voice_client.disconnect()
+        if await self.leave_channel(ctx.guild):
             await ctx.channel.send("Later!")
-            print("disconnected from vc")
-            await self.client.change_presence(activity=discord.Game('her lyre'))
         else:
             await ctx.channel.send("I'm not even in a voice channel though...")
-
 
 
     def play_next(self, ctx, err=None):
@@ -111,7 +115,6 @@ class vchat(commands.Cog):
             ctx.voice_client.play(player, after=lambda e: self.play_next(ctx, e))
         else:
             pass # done playing
-
 
 
     # dirty copy/paste job to make this an alias for !play
@@ -141,7 +144,6 @@ class vchat(commands.Cog):
 
             if not ctx.voice_client.is_playing() and not ctx.voice_client.is_paused():
                 self.play_next(ctx)
-
 
 
     @commands.command()
@@ -194,6 +196,15 @@ class vchat(commands.Cog):
             await ctx.channel.send(output)
         else:
             await ctx.channel.send("No songs in queue")
+
+
+    @commands.Cog.listener()
+    async def on_voice_state_update(self, member, before, after):
+        vchannel = before.channel
+        if vchannel and vchannel.guild.id in self.queue:
+            vc = vchannel.guild.voice_client
+            if vc and len(vc.channel.members) == 1:
+                await self.leave_channel(vchannel.guild)
 
 
 
