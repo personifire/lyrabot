@@ -8,24 +8,19 @@ import sys
 #https://discordapp.com/oauth2/authorize?&client_id=YOUR_CLIENT_ID_HERE&scope=bot&permissions=0
 #https://discordapp.com/oauth2/authorize?&client_id=495322560188252170&scope=bot&permissions=53709888
 
-Client = discord.Client(status = "her lyre")
-client = commands.Bot(command_prefix = '!')
-client.remove_command('help')
-
 STAR = 410660094083334155
+PERS = 347100862125965312
 EXTENSIONS = ['react', 'fun', 'search', 'vchat', 'uno']
+
+owners = [PERS]
+
+Client = discord.Client(status = "her lyre")
+client = commands.Bot(command_prefix = '!', owner_ids = owners)
+client.remove_command('help')
 
 status = True
 
 loop = asyncio.get_event_loop()
-
-KEY_MAX = 100000000
-key = random.randint(1, KEY_MAX)
-
-def regen_key():
-    global key
-    key = random.randint(1, KEY_MAX)
-    print("newest key: " + str(key))
 
 ######################################################################################################################
 
@@ -202,11 +197,7 @@ async def dm(ctx):
     await ctx.message.author.send("bon")
 
 @client.command()
-async def newkey(ctx):
-    regen_key()
-    await ctx.channel.send("New key generated!")
-
-@client.command()
+@commands.guild_only()
 async def python_exec(ctx, *args):
     foo = []
     command = "foo.append(ctx.channel.send('hi'))"
@@ -214,46 +205,30 @@ async def python_exec(ctx, *args):
     await foo[0]()
     return
 
-    global key
-    if args and args[0].isdigit():
-        command = ctx.message.content
-        key_str = str(key)
-        keyposition = command.find(key_str)
-        if keyposition != -1:
-            command = command[keyposition + len(key_str):].lstrip()
-            exec(command, globals(), locals())
-        else:
-            await ctx.channel.send("Good try!")
+    author = ctx.author
+    if author.guild_permissions.administrator:
+        pass
     else:
-        await ctx.channel.send("Aha. No, you're gonna need a key for that one.")
-    regen_key()
+        await ctx.channel.send("Aha. No, you're gonna need more perms than that.")
 
 @client.command()
 async def nuke(ctx, *args):
-    global key
-    if args and args[0].isdigit():
-        if int(args[0]) == key:
-            msg = ""
-            for i in range(10):
-                msg += "<:dab:531755608467046401>\n"
-            for i in range(5):
-                await ctx.channel.send(msg)
-        else:
-            await ctx.channel.send("Good try!")
+    author = ctx.author
+    if author.guild_permissions.administrator:
+        msg = ""
+        for i in range(10):
+            msg += "<:dab:531755608467046401>\n"
+        for i in range(5):
+            await ctx.channel.send(msg)
     else:
-        await ctx.channel.send("You're gonna have a bad time. You got a key for me?")
-    regen_key()
+        await ctx.channel.send("You're gonna have a bad time. Might need more perms for that!")
 
 @client.command()
+@commands.is_owner()
 async def reload(ctx, *args):
-    global key
-    if args and args[0].isdigit() and int(args[0]) == key:
-        await ctx.channel.send("Alright, reloading!")
-        for extension in EXTENSIONS:
-            client.reload_extension(extension)
-    else:
-        await ctx.channel.send("naaaaaah")
-    regen_key()
+    await ctx.channel.send("Alright, reloading!")
+    for extension in EXTENSIONS:
+        client.reload_extension(extension)
 
 
 @client.command()
@@ -270,9 +245,7 @@ async def snuggle(ctx):
 
 @client.command()
 async def rest(ctx, *args):
-    global key
-    if args and args[0].isdigit():
-        if int(args[0]) == key:
+    if ctx.author.id not in owners:
             sleepytwi = discord.utils.get(client.emojis, name = 'sleepytwi')
             await ctx.channel.send(sleepytwi)
             id = ctx.message.guild.id
@@ -280,7 +253,6 @@ async def rest(ctx, *args):
             print('Lyra is offline')
     else:
         await ctx.channel.send("Aww, but I'm not tired yet!")
-        regen_key()
         
 
 ######################################################################################################################
