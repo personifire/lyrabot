@@ -27,6 +27,7 @@ class cog_Uno(commands.Cog):
     def __init__(self, client):
         self.lock       = asyncio.Lock()
         self.debug      = False
+        self.channel    = None
         self.call_level = 0
         self.reset_state()
 
@@ -71,6 +72,7 @@ class cog_Uno(commands.Cog):
             num_players = len(self.players)
             if num_players <= 1:
                 await ctx.channel.send(ctx.author.name + ' has started an Uno lobby! Type "!uno join" to join.')
+                self.channel = ctx.channel
             else:
                 await ctx.channel.send(ctx.author.name + " has joined the game! Total players: " + str(num_players))
             await self.debug_print("... player list: " + str(list(map(lambda p: p.name, self.players))), ctx)
@@ -140,7 +142,7 @@ class cog_Uno(commands.Cog):
         msg = "Game is starting! Turn order: "
         for player in self.players:
             msg += "<@" + str(player.id) + "> "
-        await ctx.channel.send(msg)
+        await self.channel_print(msg, ctx)
         self.turn -= self.direction # compensate for preincrement in new turn
         await self.new_turn(ctx)
 
@@ -172,7 +174,7 @@ class cog_Uno(commands.Cog):
             if len(self.stops) >= votestop_threshold:
                 await self.debug_print("... stopping game", ctx)
                 self.end_game()
-                await ctx.channel.send("Stop votes received! Game is ending.")
+                await self.channel_print("Stop votes received! Game is ending.", ctx)
         self.call_level -= 1
 
     @uno.command()
@@ -207,7 +209,7 @@ class cog_Uno(commands.Cog):
                 await self.debug_print("... kick votes: " + str(list(map(lambda p: p.name, self.kicks[player]))), ctx)
 
                 if len(self.kicks[player]) >= votekick_threshold:
-                    await ctx.channel.send("Removing " + player.name + " from the game now. Sorry, bud!")
+                    await self.channel_print("Removing " + player.name + " from the game now. Sorry, bud!", ctx)
                     await self.debug_print("... removing player " + player.name, ctx)
                     self.remove_player(player)
                     self.turn -= self.direction
@@ -215,7 +217,7 @@ class cog_Uno(commands.Cog):
         if len(self.players) <= 1:
             await self.debug_print("... attempting to end game", ctx)
             self.end_game()
-            await ctx.channel.send("Too few players left. Game's gonna have to end early!")
+            await self.channel_print("Too few players left. Game's gonna have to end early!", ctx)
             await self.debug_print("... in-game status: " + str(self.in_game), ctx)
         self.call_level -= 1
 
@@ -278,7 +280,7 @@ class cog_Uno(commands.Cog):
             await self.debug_print("... discard after playing: " + str(self.discard), ctx)
 
             if len(self.hands[player]) == 0:
-                await ctx.channel.send("<@" + str(player.id) + "> Wins! Congrats. The game is now over!")
+                await self.channel_send("<@" + str(player.id) + "> Wins! Congrats. The game is now over!", ctx)
                 await self.debug_print("... ending game", ctx)
                 self.end_game()
                 return
@@ -312,8 +314,8 @@ class cog_Uno(commands.Cog):
 
             await self.debug_print("... trying to draw " + str(num_cards) + " card(s)", ctx)
 
-            if len(self.deck) == 0:
-                await ctx.channel.send("Not enough cards left in the deck to draw. Passing turn...")
+            if len(self.deck) + len(self.discard) == 0:
+                await self.channel_print("Not enough cards left in the deck to draw. Passing turn...", ctx)
                 await self.debug_print("... passing turn", ctx)
                 self.new_turn(ctx)
 
@@ -347,7 +349,7 @@ class cog_Uno(commands.Cog):
 ###################################################################################################
 
     async def debug_print(self, string, ctx = None):
-        if ctx is not None:
+        if self.channel is None and ctx is not None:
             self.channel = ctx.channel
         string = "  " * self.call_level + string
 
@@ -357,6 +359,11 @@ class cog_Uno(commands.Cog):
                 raise ValueError("Did not have context available to send message to")
             else:
                 await self.channel.send(string)
+
+    async def channel_print(self, string, ctx):
+        await ctx.channel.send(string)
+        if ctx.channel.id != self.channel.id:
+            await self.channel.send(string)
 
     def card_name(self, card):
         color_emojis = { "red": "heart", 
@@ -417,11 +424,11 @@ class cog_Uno(commands.Cog):
 
         await self.debug_print("... active player is: " + self.players[self.turn].name, ctx)
         await self.send_hand(self.players[self.turn])
-        await ctx.channel.send("<@" + str(self.players[self.turn].id) + ">, it's your turn!")
+        await self.channel_send("<@" + str(self.players[self.turn].id) + ">, it's your turn!", ctx)
         top_msg = "Top of the discard pile is: " + self.card_name(self.discard[-1])
         if self.discard[-1][0] == "wild":
             top_msg += " (" + self.top_color + ")"
-        await ctx.channel.send(top_msg)
+        await self.channel_send(top_msg, ctx)
 
         self.call_level -= 1
 
@@ -431,6 +438,8 @@ class cog_Uno(commands.Cog):
         for card in range(num_cards):
             if len(self.deck) == 0:
                 self.reshuffle()
+            if len(self.deck) == 0:
+                break
             card = self.deck.pop()
             self.hands[player].append(card)
             cards.append(card)
@@ -467,6 +476,7 @@ class cog_Uno(commands.Cog):
 
     def reset_state(self):
         self.in_game = False
+        self.channel = None
         self.deck    = []
         self.discard = []
         self.players = []
