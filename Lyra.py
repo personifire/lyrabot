@@ -238,10 +238,10 @@ async def snuggle(ctx):
     global status
     if status:
         status = not status
-        await client.change_presence(game=discord.Game(name='with her husbando'))
+        await client.change_presence(activity=discord.Game('with her husbando'))
     else:
         status = not status
-        await client.change_presence(game=discord.Game(name='her lyre'))
+        await client.change_presence(activity=discord.Game('her lyre'))
 
 @client.command()
 async def rest(ctx, *args):
