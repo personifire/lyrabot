@@ -245,10 +245,12 @@ async def snuggle(ctx):
 
 @client.command()
 async def rest(ctx, *args):
-    if ctx.author.id not in owners:
+    if ctx.author.id in owners:
             sleepytwi = discord.utils.get(client.emojis, name = 'sleepytwi')
-            await ctx.channel.send(sleepytwi)
-            id = ctx.message.guild.id
+            if sleepytwi:
+                await ctx.channel.send(sleepytwi)
+            else:
+                await ctx.channel.send("Alright. Nighty-night!")
             await client.close()
             print('Lyra is offline')
     else:
