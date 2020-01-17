@@ -1,6 +1,6 @@
 import random
 
-import lexer # thing under test
+from . import lexer # thing under test
 
 def randomchoice(rules):
     productions = []

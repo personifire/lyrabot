@@ -1,5 +1,5 @@
-import lexer
-import parsetree
+from . import lexer
+from . import parsetree
 
 # take tokens and return an abstract syntax tree
 # simple recursive decent parser

@@ -98,7 +98,7 @@ class Drop():
         drops = self.rollnum.evaluate()
         if drops < 0:
             drops = -drops
-            self.droparg = !self.droparg
+            self.droparg = not self.droparg
         elif drops == 0:
             return rollseq
 

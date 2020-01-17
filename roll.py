@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 import random
 
-import roll.parser
+import roll_lib.parser
 
 class roll(commands.Cog):
     def __init__(self, client):
@@ -12,7 +12,7 @@ class roll(commands.Cog):
     @commands.cooldown(7, 10, commands.BucketType.user)
     async def roll(self, ctx, *args):
         string = " ".join(args)
-        rollexpr = roll.parser(string)
+        rollexpr = roll_lib.parser(string)
         rollval  = rollexpr.evaluate()
 
         value = 0
@@ -24,4 +24,4 @@ class roll(commands.Cog):
 
 
 def setup(client):
-    client.add_cog(fun(client))
+    client.add_cog(roll(client))
