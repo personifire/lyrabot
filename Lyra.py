@@ -30,18 +30,14 @@ async def on_resumed():
 
 @client.event
 async def on_command_error(ctx, err):
-    print("--- caught exception ---")
-    print(err)
-    try:
-        if isinstance(err, commands.CommandOnCooldown):
-            await ctx.channel.send("You're on cooldown, " + ctx.author.display_name)
-        elif isinstance(err, commands.CommandNotFound):
-            await ctx.channel.send("I don't think that's something I can do...")
-        else:
-            await ctx.channel.send("Something bad happened! I can't do that, sorry.")
-            print(err)
-    except Exception as e:
-        print("Exception in on_command_error: \n" + str(e))
+    if isinstance(err, commands.CommandOnCooldown):
+        await ctx.channel.send("You're on cooldown, " + ctx.author.display_name)
+    elif isinstance(err, commands.CommandNotFound):
+        await ctx.channel.send("I don't think that's something I can do...")
+    else:
+        print("--- caught exception ---")
+        await ctx.channel.send("Something bad happened! I can't do that, sorry.")
+        raise err
 
 @client.event
 async def on_member_remove(member):

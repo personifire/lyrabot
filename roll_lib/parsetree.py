@@ -1,18 +1,24 @@
 import random
 
+def total(lst):
+    total = 0
+    for val in lst:
+        total += val
+    return total
+
 class Roll():
     def __init__(self, left, oper, right):
         self.left  = left
-        self.oper  = oper
+        self.oper  = Operator(oper)
         self.right = right
 
-    def roll():
+    def roll(self):
         lval = self.left.roll()
         rval = self.right.roll()
         return self.oper(lval, rval)
 
-    def evaluate():
-        return self.roll()
+    def evaluate(self):
+        return total(self.roll())
 
 class RollTerminal(Roll):
     def __init__(self, dice, faces, actionseq = None):
@@ -20,31 +26,32 @@ class RollTerminal(Roll):
         self.faces     = faces
         self.actionseq = actionseq
 
-    def roll():
-        dice  = self.dice.roll()
+    def roll(self):
+        dice  = self.dice.evaluate()
         if dice < 0:
-            rolls = [-self.faces.roll() for roll in range(-dice)]
+            rolls = [-self.faces.evaluate() for roll in range(-dice)]
         elif dice == 0:
             rolls = [0]
         else:
-            rolls = [self.faces.roll() for roll in range(dice)]
+            rolls = [self.faces.evaluate() for roll in range(dice)]
         rolls.sort()
 
-        if actionseq:
-            roll = self.actionseq(roll)
-        return roll
+        if self.actionseq:
+            rolls = self.actionseq(rolls)
+        return rolls
 
-    def evaluate():
-        return self.roll()
+    def evaluate(self):
+        return total(self.roll())
 
 class Operator():
     def __init__(self, operator):
-        if operator.value == "+":
-            self.call = lambda a, b: sort(a + b)
-        elif operator.value == "-":
-            self.call = lambda a, b: sort(a - b)
+        if operator == "+":
+            self.call = lambda a, b: sorted(a + b)
+        else: # operator == "-":
+            self.call = lambda a, b: sorted(a + list(map(lambda x: -x, b)))
 
     def __call__(self, lval, rval):
+        value = self.call(lval, rval)
         return self.call(lval, rval)
 
 class Integer():
@@ -53,28 +60,29 @@ class Integer():
             value = int(number, 0)
         except Exception as e:
             value = 0
+            raise e
 
         if operator == "-":
             value = -value
 
         self.value = value
 
-    def roll():
+    def roll(self):
         if self.value < 0:
-            return random.randint(self.value, -1)
+            return [random.randint(self.value, -1)]
         elif self.value == 0:
-            return 0
+            return [0]
         else:
-            return random.randint(1, self.value)
+            return [random.randint(1, self.value)]
 
-    def evaluate():
-        return self.value
+    def evaluate(self):
+        return self.roll()[0]
 
 class ActionSequence():
     def __init__(self, action, args, prev = None):
-        if action.value == "drop":
+        if action == "drop":
             self.action = Drop(*args)
-        elif action.value == "explode":
+        elif action == "explode":
             self.action = Explode(*args)
 
         self.prev = prev
@@ -95,7 +103,10 @@ class Drop():
 
     # weird case: "(2d20 + 5) drop lowest" will sometimes drop the "+ 5"
     def __call__(self, rollseq):
-        drops = self.rollnum.evaluate()
+        if isinstance(self.rollnum, Integer):
+            drops = self.rollnum.value
+        else:
+            drops = self.rollnum.evaluate()
         if drops < 0:
             drops = -drops
             self.droparg = not self.droparg

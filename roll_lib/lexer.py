@@ -2,11 +2,13 @@
 class lexer():
     def __init__(self, string):
         self.tokens = self.__tokenize(string.lower())
+        self.EOF = self.Token("EOF", None)
 
     class Token():
         def __init__(self, tokentype, value):
             self.tokentype = tokentype
             self.value = value
+
 
         def __str__(self):
             return "('" + self.tokentype + "', '" + self.value + "')"
@@ -45,7 +47,7 @@ class lexer():
             if len(string) >= len(arg) and string[:len(arg)] == arg:
                 return self.Token("DropArg", arg)
         return False
-
+    
 
     # if I were to do this properly, I'd use a FSM to classify tokens without backtracking
     # and if I were doing this properly, I'd do it lazily, i.e. one token at a time
@@ -78,10 +80,10 @@ class lexer():
         return tokens
 
     def peek(self):
-        return self.tokens[-1] if len(self.tokens) >= 1 else False
+        return self.tokens[-1] if len(self.tokens) >= 1 else self.EOF
 
     def next(self):
-        return self.tokens.pop() if len(self.tokens) >= 1 else False
+        return self.tokens.pop() if len(self.tokens) >= 1 else self.EOF
     
     def unread(self, token):
         self.tokens.append(token)

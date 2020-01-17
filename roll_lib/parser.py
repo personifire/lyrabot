@@ -18,16 +18,16 @@ class parser():
 
     def __expect(self, obj, expect = None):
         if expect:
-            if actual.tokentype == expect:
-                return actual
+            if obj.tokentype == expect:
+                return obj
             else:
-                errormsg = "" # probably should make a helpful error
+                errormsg = "Expected token " + expect + " not found"
                 raise self.ParsingError(errormsg)
         else:
             if obj:
                 return obj
             else:
-                errormsg = "" # probably should make a helpful error
+                errormsg = "Expected object not found" # probably should make a helpful error
                 raise self.ParsingError(errormsg)
 
     def __RollTerminal(self):
@@ -67,10 +67,10 @@ class parser():
 
         # { oper roll }
         while self.__match(self.lexer.peek(), "Operator"):
-            operator  = self.__expect(self.lexer.next(), "Operator")
-            rightroll = self.__expect(self.__RollTerminal())
+            operator = self.__expect(self.lexer.next(), "Operator")
+            right    = self.__expect(self.__RollTerminal())
 
-            roll = parsetree.Roll(roll, operator, right)
+            roll = parsetree.Roll(roll, operator.value, right)
 
         return roll
     
@@ -95,7 +95,7 @@ class parser():
         # "+" || "-"
         if self.__match(self.lexer.peek(), "Operator"):
             operator = self.__expect(self.lexer.next(), "Operator")
-            return parsetree.Operator(operator)
+            return parsetree.Operator(operator.value)
         else:
             return None
 
@@ -109,7 +109,10 @@ class parser():
         # natnum
         if self.__match(self.lexer.peek(), "NaturalNumber"):
             number = self.__expect(self.lexer.next(), "NaturalNumber")
-            return parsetree.Integer(number, operator)
+            if operator:
+                return parsetree.Integer(number.value, operator.value)
+            else:
+                return parsetree.Integer(number.value)
         else:
             if operator:
                 self.lexer.unread(operator)
@@ -125,11 +128,11 @@ class parser():
             if action.value == "drop":
                 # droparg ? rollnum ?
                 if self.__match(self.lexer.peek(), "DropArg"):
-                    args["DropArg"] = self.expect(self.lexer.next(), "DropArg")
+                    args["DropArg"] = self.expect(self.lexer.next(), "DropArg").value
                 rollnum = self.__Rollnum()
                 if rollarg:
                     args["Rollnum"] = rollnum
-            actionseq = parsetree.ActionSequence(action, args, actionseq)
+            actionseq = parsetree.ActionSequence(action.value, args, actionseq)
 
         return actionseq
 
