@@ -4,10 +4,6 @@ import asyncio
 import random
 import sys
 
-#https://discordpy.readthedocs.io/en/latest/api.html#user
-#https://discordapp.com/oauth2/authorize?&client_id=YOUR_CLIENT_ID_HERE&scope=bot&permissions=0
-#https://discordapp.com/oauth2/authorize?&client_id=495322560188252170&scope=bot&permissions=53709888
-
 STAR = 410660094083334155
 PERS = 347100862125965312
 EXTENSIONS = ['react', 'fun', 'search', 'vchat', 'uno']
