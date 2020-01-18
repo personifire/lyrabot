@@ -128,7 +128,7 @@ class parser():
             if action.value == "drop":
                 # droparg ? rollnum ?
                 if self.__match(self.lexer.peek(), "DropArg"):
-                    args["DropArg"] = self.expect(self.lexer.next(), "DropArg").value
+                    args["DropArg"] = self.__expect(self.lexer.next(), "DropArg").value
                 rollnum = self.__Rollnum()
                 if rollarg:
                     args["Rollnum"] = rollnum

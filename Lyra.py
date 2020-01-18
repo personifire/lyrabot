@@ -10,8 +10,7 @@ EXTENSIONS = ['react', 'fun', 'search', 'vchat', 'uno', 'roll']
 
 owners = [PERS]
 
-Client = discord.Client(status = "her lyre")
-client = commands.Bot(command_prefix = '!', owner_ids = owners)
+client = commands.Bot(command_prefix = '!', owner_id = PERS)
 client.remove_command('help')
 
 status = True

@@ -68,7 +68,7 @@ class lexer():
                 match = func(toparse)
                 if match:
                     tokens.append(match)
-                    toparse = toparse.lstrip(toparse[len(match.value):])
+                    toparse = toparse[len(match.value):].lstrip()
                     break
             if not match:
                 errormsg  = "\nSorry, I couldn't understand the word starting here:\n" + string + "\n"
