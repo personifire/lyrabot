@@ -23,7 +23,7 @@ class lexer():
         return self.Token("Operator", string[0]) if string[0] in "+-" else False
 
     def __T_DiceSpecifier(self, string):
-        isdicespecifier = string[0] == "d" and len(string) > 1 and string[1] in "(0123456789"
+        isdicespecifier = string[0] == "d" and len(string) > 1 and string[1] in " (0123456789"
         return self.Token("DiceSpecifier", string[0]) if isdicespecifier else False
 
     def __T_NaturalNumber(self, string):
@@ -60,14 +60,15 @@ class lexer():
                 self.__T_OpenParen,     self.__T_CloseParen,
         ]
 
+        string = string.rstrip()
         toparse = string[:]
         while toparse:
-            toparse = toparse.lstrip() # skip whitespace
+            toparse = toparse.lstrip() # remove whitespace
             for func in matchfuncs:
                 match = func(toparse)
                 if match:
                     tokens.append(match)
-                    toparse = toparse[len(match.value):]
+                    toparse = toparse.lstrip(toparse[len(match.value):])
                     break
             if not match:
                 errormsg  = "\nSorry, I couldn't understand the word starting here:\n" + string + "\n"
