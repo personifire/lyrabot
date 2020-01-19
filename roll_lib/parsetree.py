@@ -39,11 +39,11 @@ class RollTerminal(Roll):
         faces = self.faces.evaluate()
 
         if dice < 0:
-            rolls = [-rand_dice(faces) for roll in range(-dice)]
+            rolls = [-self.rand_dice(faces) for roll in range(-dice)]
         elif dice == 0:
             rolls = [0]
         else:
-            rolls = [rand_dice(faces) for roll in range(dice)]
+            rolls = [self.rand_dice(faces) for roll in range(dice)]
         rolls.sort()
 
         if self.actionseq:
