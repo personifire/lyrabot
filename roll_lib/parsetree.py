@@ -29,21 +29,21 @@ class RollTerminal(Roll):
     def rand_dice(self, faces):
         if faces < 0:
             return random.randint(faces, -1)
-        elif self.value == 0:
+        elif faces == 0:
             return 0
         else:
             return random.randint(1, faces)
 
     def roll(self):
-        dice  = self.dice.evaluate()
-        faces = self.faces.evaluate()
+        dicenum = self.dice.evaluate()
+        facenum = self.faces.evaluate()
 
-        if dice < 0:
-            rolls = [-self.rand_dice(faces) for roll in range(-dice)]
-        elif dice == 0:
+        if dicenum < 0:
+            rolls = [-self.rand_dice(facenum) for roll in range(-dicenum)]
+        elif dicenum == 0:
             rolls = [0]
         else:
-            rolls = [self.rand_dice(faces) for roll in range(dice)]
+            rolls = [ self.rand_dice(facenum) for roll in range(dicenum)]
         rolls.sort()
 
         if self.actionseq:
