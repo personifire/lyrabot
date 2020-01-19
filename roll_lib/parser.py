@@ -53,10 +53,11 @@ class parser():
                 return None
 
         # action-seq ?
+        actionseq = None
         if self.__match(self.lexer.peek(), "Action"):
             actionseq = self.__expect(self.__ActionSequence())
 
-        roll  = parsetree.RollTerminal(dice, faces)
+        roll  = parsetree.RollTerminal(dice, faces, actionseq)
         return roll
 
     def __Roll(self):
@@ -71,6 +72,8 @@ class parser():
             right    = self.__expect(self.__RollTerminal())
 
             roll = parsetree.Roll(roll, operator.value, right)
+
+        self.__expect(self.lexer.next(), "EOF")
 
         return roll
     
@@ -128,10 +131,10 @@ class parser():
             if action.value == "drop":
                 # droparg ? rollnum ?
                 if self.__match(self.lexer.peek(), "DropArg"):
-                    args["DropArg"] = self.__expect(self.lexer.next(), "DropArg").value
+                    args["droparg"] = self.__expect(self.lexer.next(), "DropArg").value
                 rollnum = self.__Rollnum()
-                if rollarg:
-                    args["Rollnum"] = rollnum
+                if rollnum:
+                    args["rollnum"] = rollnum
             actionseq = parsetree.ActionSequence(action.value, args, actionseq)
 
         return actionseq

@@ -6,6 +6,12 @@ def total(lst):
         total += val
     return total
 
+def int_or_eval(die):
+    if isinstance(die, Integer):
+        return die.value
+    else:
+        return die.roll()
+
 class Roll():
     def __init__(self, left, oper, right):
         self.left  = left
@@ -13,8 +19,8 @@ class Roll():
         self.right = right
 
     def roll(self):
-        lval = self.left.roll()
-        rval = self.right.roll()
+        lval = int_or_eval(self.left)
+        rval = int_or_eval(self.right)
         return self.oper(lval, rval)
 
     def evaluate(self):
@@ -27,7 +33,8 @@ class RollTerminal(Roll):
         self.actionseq = actionseq
 
     def roll(self):
-        dice  = self.dice.evaluate()
+        dice = int_or_eval(self.dice)
+
         if dice < 0:
             rolls = [-self.faces.evaluate() for roll in range(-dice)]
         elif dice == 0:
@@ -81,9 +88,9 @@ class Integer():
 class ActionSequence():
     def __init__(self, action, args, prev = None):
         if action == "drop":
-            self.action = Drop(*args)
+            self.action = Drop(**args)
         elif action == "explode":
-            self.action = Explode(*args)
+            self.action = Explode(**args)
 
         self.prev = prev
 
@@ -103,10 +110,8 @@ class Drop():
 
     # weird case: "(2d20 + 5) drop lowest" will sometimes drop the "+ 5"
     def __call__(self, rollseq):
-        if isinstance(self.rollnum, Integer):
-            drops = self.rollnum.value
-        else:
-            drops = self.rollnum.evaluate()
+        drops = int_or_eval(self.rollnum)
+
         if drops < 0:
             drops = -drops
             self.droparg = not self.droparg
@@ -118,7 +123,7 @@ class Drop():
 
         if self.droparg:
             return rollseq[drops:]
-        elif self.droparg:
+        else:
             return rollseq[:-drops]
 
 class Explode():
