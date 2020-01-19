@@ -6,12 +6,6 @@ def total(lst):
         total += val
     return total
 
-def int_or_roll(die):
-    if isinstance(die, Integer):
-        return [die.value]
-    else:
-        return die.roll()
-
 class Roll():
     def __init__(self, left, oper, right):
         self.left  = left
@@ -19,8 +13,8 @@ class Roll():
         self.right = right
 
     def roll(self):
-        lval = int_or_roll(self.left)
-        rval = int_or_roll(self.right)
+        lval = self.left.roll()
+        rval = self.right.roll()
         return self.oper(lval, rval)
 
     def evaluate(self):
@@ -32,15 +26,24 @@ class RollTerminal(Roll):
         self.faces     = faces
         self.actionseq = actionseq
 
+    def rand_dice(self, faces):
+        if faces < 0:
+            return random.randint(faces, -1)
+        elif self.value == 0:
+            return 0
+        else:
+            return random.randint(1, faces)
+
     def roll(self):
-        dice = total(int_or_roll(self.dice))
+        dice  = self.dice.evaluate()
+        faces = self.faces.evaluate()
 
         if dice < 0:
-            rolls = [-self.faces.evaluate() for roll in range(-dice)]
+            rolls = [-rand_dice(faces) for roll in range(-dice)]
         elif dice == 0:
             rolls = [0]
         else:
-            rolls = [self.faces.evaluate() for roll in range(dice)]
+            rolls = [rand_dice(faces) for roll in range(dice)]
         rolls.sort()
 
         if self.actionseq:
@@ -75,15 +78,10 @@ class Integer():
         self.value = value
 
     def roll(self):
-        if self.value < 0:
-            return [random.randint(self.value, -1)]
-        elif self.value == 0:
-            return [0]
-        else:
-            return [random.randint(1, self.value)]
+        return [self.value]
 
     def evaluate(self):
-        return self.roll()[0]
+        return self.value
 
 class ActionSequence():
     def __init__(self, action, args, prev = None):
@@ -110,7 +108,7 @@ class Drop():
 
     # weird case: "(2d20 + 5) drop lowest" will sometimes drop the "+ 5"
     def __call__(self, rollseq):
-        drops = total(int_or_roll(self.rollnum))
+        drops = self.rollnum.evaluate()
 
         if drops < 0:
             drops = -drops

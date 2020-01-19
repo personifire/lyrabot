@@ -11,7 +11,9 @@ class parser():
         self.lexer = lexer.lexer(string)
 
     def evaluate(self):
-        return self.__Roll().roll()
+        roll = self.__Roll()
+        self.__expect(self.lexer.next(), "EOF")
+        return roll.roll()
 
     def __match(self, actual, expect):
         return actual.tokentype == expect
@@ -72,8 +74,6 @@ class parser():
             right    = self.__expect(self.__RollTerminal())
 
             roll = parsetree.Roll(roll, operator.value, right)
-
-        self.__expect(self.lexer.next(), "EOF")
 
         return roll
     
