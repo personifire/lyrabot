@@ -12,8 +12,13 @@ class roll(commands.Cog):
     @commands.cooldown(7, 10, commands.BucketType.user)
     async def roll(self, ctx, *args):
         string = " ".join(args)
-        rollexpr = roll_lib.parser.parser(string)
-        rollval  = rollexpr.evaluate()
+        try:
+            rollexpr = roll_lib.parser.parser(string)
+            rollval  = rollexpr.evaluate()
+        except Exception as e:
+            errormsg = "I had trouble rolling that! ```" + str(e) + "```"
+            await ctx.channel.send(errormsg)
+            raise e
 
         value = 0
         for die in rollval:
