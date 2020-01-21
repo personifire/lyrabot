@@ -38,6 +38,9 @@ class RollTerminal(Roll):
         dicenum = self.dice.evaluate()
         facenum = self.faces.evaluate()
 
+        if abs(dicenum) > 100000:
+            raise Exception("Too many dice to roll")
+
         if dicenum < 0:
             rolls = [-self.rand_dice(facenum) for roll in range(-dicenum)]
         elif dicenum == 0:
