@@ -207,6 +207,11 @@ class vchat(commands.Cog):
                 await self.leave_channel(vchannel.guild)
 
 
+    #def cog_unload():
+    #    for guild in thing:
+    #        self.leave_channel(guild)
+
+
 
 def setup(client):
     client.add_cog(vchat(client))

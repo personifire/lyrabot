@@ -6,7 +6,7 @@ import sys
 
 STAR = 410660094083334155
 PERS = 347100862125965312
-EXTENSIONS = ['react', 'fun', 'search', 'vchat', 'uno', 'roll']
+EXTENSIONS = ['react', 'fun', 'search', 'vchat', 'uno', 'roll', 'meta']
 
 owners = [PERS]
 

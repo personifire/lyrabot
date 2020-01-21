@@ -1,6 +1,8 @@
 import discord
 from discord.ext import commands
+
 import random
+import importlib
 
 import roll_lib.parser
 
@@ -25,6 +27,12 @@ class roll(commands.Cog):
             value += die
 
         await ctx.channel.send(ctx.author.mention + ", you rolled: " + str(value) + ". No, don't ask me to explain that.")
+
+
+    def cog_unload(self):
+        importlib.reload(roll_lib.lexer)
+        importlib.reload(roll_lib.parser)
+        importlib.reload(roll_lib.parsetree)
 
 
 
