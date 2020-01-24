@@ -1,8 +1,9 @@
+import asyncio
+import sys
+import os.path
+
 import discord
 from discord.ext import commands
-import asyncio
-import random
-import sys
 
 STAR = 410660094083334155
 PERS = 347100862125965312
@@ -250,8 +251,20 @@ async def rest(ctx, *args):
 ######################################################################################################################
 
 if __name__ == "__main__":
+    tokenloc = "token.txt"
+
     if len(sys.argv) > 1:
-        TOKEN = sys.argv[1]
+        token = sys.argv[1]
+        if not os.path.isfile(tokenloc):
+            with open(tokenloc, "w") as tokenfile:
+                tokenfile.write(token)
+    else:
+        if os.path.isfile(tokenloc):
+            with open(tokenloc, "r") as tokenfile:
+                token = tokenfile.readline().strip()
+        else:
+            raise Exception("Could not find token")
+
 
     all_extensions_loaded = True
     for extension in EXTENSIONS:
@@ -262,7 +275,7 @@ if __name__ == "__main__":
             print('{} cannot be loaded. [{}]'.format(extension, error))
             all_extensions_loaded = False
     if all_extensions_loaded:
-        client.run(TOKEN)
+        client.run(token)
     else:
         print("Process aborted")
 print("Process ended")
