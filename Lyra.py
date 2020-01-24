@@ -34,9 +34,8 @@ async def on_command_error(ctx, err):
     elif isinstance(err, commands.CommandNotFound):
         await ctx.channel.send("I don't think that's something I can do...")
     else:
-        print("--- caught exception ---")
+        print("--- caught " + err.__class__.__name__ + " ---\n" + str(err))
         await ctx.channel.send("Something bad happened! I can't do that, sorry.")
-        raise err
 
 @client.event
 async def on_member_remove(member):
