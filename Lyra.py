@@ -10,8 +10,9 @@ PERS = 347100862125965312
 EXTENSIONS = ['react', 'fun', 'search', 'vchat', 'uno', 'roll', 'meta']
 
 owners = [PERS]
+owners = set(owners)
 
-client = commands.Bot(command_prefix = '!', owner_id = PERS)
+client = commands.Bot(command_prefix = '!', owner_ids = owners)
 client.remove_command('help')
 
 status = True
@@ -250,9 +251,8 @@ async def rest(ctx, *args):
 
 ######################################################################################################################
 
-if __name__ == "__main__":
+def get_token():
     tokenloc = "token.txt"
-
     if len(sys.argv) > 1:
         token = sys.argv[1]
         if not os.path.isfile(tokenloc):
@@ -264,8 +264,9 @@ if __name__ == "__main__":
                 token = tokenfile.readline().strip()
         else:
             raise Exception("Could not find token")
+    return token
 
-
+def load_extensions():
     all_extensions_loaded = True
     for extension in EXTENSIONS:
         try:
@@ -273,16 +274,21 @@ if __name__ == "__main__":
             print('Loaded {}'.format(extension))
         except Exception as error:
             print('{} cannot be loaded. [{}]'.format(extension, error))
-            all_extensions_loaded = False
-    if all_extensions_loaded:
-        client.run(token)
-    else:
-        print("Process aborted")
-print("Process ended")
+            raise error
 
-try:
-    client.logout().send(None)
-except StopIteration:
-    print("Client stopped")
+def main():
+    token = get_token()
+    load_extensions()
 
-quit()
+    client.run(token)
+
+    print("Closing client")
+    try:
+        client.close().send(None)
+    except StopIteration:
+        print("All done!")
+    sys.exit()
+
+
+if __name__ == "__main__":
+    main()

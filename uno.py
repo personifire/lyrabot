@@ -11,12 +11,11 @@ Has a deck, a discard pile, and hands for every player.
 Players are PM'd their hands after every change -- that is, draws and plays.
 
 Players join the lobby individually, and can leave at any time. 
-    Players are kicked from the lobby after ten minutes without starting the game.
+    (not yet) Players are kicked from the lobby after ten minutes without starting the game.
     Needs at least 2 players to play.
     Anybody in the lobby can start the game immediately.
 
 ideas:
-    ability to play cards through PM
     house rules
 
 """

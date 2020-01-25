@@ -2,17 +2,20 @@
 Priorities:
 1. Rolls
 2. More Uno
-3. Look out for vchat bugs
 
 UNO STUFF
   The actual "UNO!" part of uno
   Timers -- turn reminders, autokicks, etc.
-  More obvious layout for cards you can/can't play (bold?)
+  More obvious layout for cards you can/can't play (bold? organization?)
+  Emoji reacts to play (?)
   House rules(?)
 
+Roll stuff
+  Make sure it works as intended -- keep an eye out for further things to do
+  Improve by adding capability for 'explain'
+  Add 'explode'
+
 TO REVISIT
-  fun.py
-    Rolls!
   Lyra.py (for various things)
   react.py
     Figure out how to make it automatically update what commands are available
@@ -21,20 +24,16 @@ TO REVISIT
 
 SMALL FEATURES
   time zone converter
-  vchat fixes
 
 BIG FEATURES
   blackjack
   poker
-  pi hosting
 
 REFERENCES
   bananas
   ponies with hats
   background pony
   boncord
-
-ERRORS
 
 MAYBE
   image manipulation

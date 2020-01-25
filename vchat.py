@@ -40,6 +40,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
 
         if 'entries' in data:
             # take first item from a playlist
+            # TODO look at playlist support
             data = data['entries'][0]
 
         filename = data['url'] if stream else ytdl.prepare_filename(data)
@@ -65,21 +66,6 @@ class vchat(commands.Cog):
         await ctx.channel.send(output)
 
 
-    async def join_channel(self, ctx):
-        if ctx.author.voice and ctx.author.voice.channel:
-            channel = ctx.author.voice.channel
-
-            if ctx.voice_client is None:
-                self.queue[ctx.guild.id] = []
-                vc = await channel.connect()
-                print("connected to vc")
-                await self.client.change_presence(activity=discord.Game('ly.radio'))
-            elif ctx.voice_client.channel != channel:
-                await ctx.voice_client.move_to(channel)
-        else:
-            await ctx.channel.send("*shrugs*")
-
-
     async def leave_channel(self, guild):
         if guild.voice_client is not None and guild.id in self.queue:
             del self.queue[guild.id]
@@ -94,7 +80,18 @@ class vchat(commands.Cog):
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.guild)
     async def join(self, ctx):
-        await self.join_channel(ctx)
+        if ctx.author.voice and ctx.author.voice.channel:
+            channel = ctx.author.voice.channel
+
+            if ctx.voice_client is None:
+                self.queue[ctx.guild.id] = []
+                vc = await channel.connect()
+                print("connected to vc")
+                await self.client.change_presence(activity=discord.Game('ly.radio'))
+            elif ctx.voice_client.channel != channel:
+                await ctx.voice_client.move_to(channel)
+        else:
+            await ctx.channel.send("*shrugs*")
 
 
     @commands.command()
@@ -110,11 +107,9 @@ class vchat(commands.Cog):
         if err:
             print(err)
             #await ctx.channel.send("Something went wrong!")
-        if len(self.queue[ctx.guild.id]) > 0:
+        if ctx.guild.id in self.queue and len(self.queue[ctx.guild.id]) > 0:
             player = self.queue[ctx.guild.id].pop(0)
             ctx.voice_client.play(player, after=lambda e: self.play_next(ctx, e))
-        else:
-            pass # done playing
 
 
     # dirty copy/paste job to make this an alias for !play
@@ -124,7 +119,7 @@ class vchat(commands.Cog):
         server = ctx.guild
 
         if ctx.author.voice and ctx.author.voice.channel:
-            await self.join_channel(ctx)
+            await self.join(ctx)
 
         voice_client = ctx.voice_client
 

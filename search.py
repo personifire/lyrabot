@@ -8,6 +8,30 @@ class search(commands.Cog):
         self.client = client
         self.searcher = Search(filter_id = 56027) # "everything" filter
 
+    async def do_sfw_snark(self, ctx, tags):
+        if 'grimdark' in tags and 'explicit' in tags:
+            await ctx.channel.send("Absolutely not.")
+        elif 'explicit' in tags or 'questionable' in tags or 'suggestive' in tags:
+            if 'lyra' in tags:
+                await ctx.channel.send("Hey, at least take me out to dinner first!")
+            else:
+                await ctx.channel.send("Ponies are NOT for sexual ||at least not in this channel||")
+        elif 'grimdark' in tags:
+            await ctx.channel.send("I'd rather not see that")
+        elif 'anthro' in tags:
+            await ctx.channel.send("Get some better taste!")
+        else:
+            return False
+        return True
+
+
+    async def do_nsfw_snark(self, ctx, tags):
+        if 'grimdark' in tags or 'anthro' in tags:
+            await ctx.channel.send("<:ew:532536050350948376>")
+            return True
+        return False
+
+
     @commands.command()
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def search(self, ctx, *args):
@@ -32,26 +56,11 @@ class search(commands.Cog):
         # validate and choose content filtering tags
         extratags = []
         if not ctx.channel.is_nsfw():
-            if 'grimdark' in tags and 'explicit' in tags:
-                await ctx.channel.send("Absolutely not.")
+            if await self.do_sfw_snark(ctx, tags):
                 return
-            elif 'explicit' in tags or 'questionable' in tags or 'suggestive' in tags:
-                if 'lyra' in tags:
-                    await ctx.channel.send("Hey, at least take me out to dinner first!")
-                else:
-                    await ctx.channel.send("Ponies are NOT for sexual ||at least not in this channel||")
-                return
-            elif 'grimdark' in tags:
-                await ctx.channel.send("I'd rather not see that")
-                return
-            elif 'anthro' in tags:
-                await ctx.channel.send("Get some better taste!")
-                return
-
             extratags = ["-explicit", "-questionable", "-suggestive", "-grimdark", "-anthro"]
         else: # in nsfw channel
-            if 'grimdark' in tags or 'anthro' in tags:
-                await ctx.channel.send("<:ew:532536050350948376>")
+            if await self.do_nsfw_snark(ctx, tags):
                 return
             else:
                 extratags = ["-grimdark", "-anthro"]
