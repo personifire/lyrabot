@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 
+import asyncio
 from contextlib import redirect_stdout
 import io
 import textwrap

@@ -44,6 +44,13 @@ class cog_Uno(commands.Cog):
         helpstr += "```"
         return helpstr
 
+    async def cog_before_invoke(self, ctx):
+        await self.lock.acquire()
+
+    async def cog_after_invoke(self, ctx):
+        if self.lock.locked():
+            self.lock.release()
+
     @commands.group(invoke_without_command=False)
     async def uno(self, ctx):
         if ctx.invoked_subcommand is None:

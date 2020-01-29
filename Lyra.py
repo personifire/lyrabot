@@ -189,21 +189,6 @@ async def dm(ctx):
     await ctx.message.author.send("bon")
 
 @client.command()
-@commands.guild_only()
-async def python_exec(ctx, *args):
-    foo = []
-    command = "foo.append(ctx.channel.send('hi'))"
-    exec(command, globals(), locals())
-    await foo[0]()
-    return
-
-    author = ctx.author
-    if author.guild_permissions.administrator:
-        pass
-    else:
-        await ctx.channel.send("Aha. No, you're gonna need more perms than that.")
-
-@client.command()
 async def nuke(ctx, *args):
     author = ctx.author
     if author.guild_permissions.administrator:
