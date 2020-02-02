@@ -16,17 +16,17 @@ class roll(commands.Cog):
         string = " ".join(args)
         try:
             rollexpr = roll_lib.parser.parser(string)
-            rollval  = rollexpr.evaluate()
+            rolls    = rollexpr.roll()
         except Exception as e:
             errormsg = "I had trouble rolling that! ```" + str(e) + "```"
             await ctx.channel.send(errormsg)
             raise e
 
         value = 0
-        for die in rollval:
+        for die in rolls:
             value += die
 
-        await ctx.channel.send(ctx.author.mention + ", you rolled: " + str(value) + ". No, don't ask me to explain that.")
+        await ctx.channel.send(ctx.author.mention + ", you rolled: " + str(value) + str(rolls)
 
 
     def cog_unload(self):

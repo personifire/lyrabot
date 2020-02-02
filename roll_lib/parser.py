@@ -13,6 +13,11 @@ class parser():
     def evaluate(self):
         roll = self.__Roll()
         self.__expect(self.lexer.next(), "EOF")
+        return roll.evaluate()
+
+    def roll(self):
+        roll = self.__Roll()
+        self.__expect(self.lexer.next(), "EOF")
         return roll.roll()
 
     def __match(self, actual, expect):
