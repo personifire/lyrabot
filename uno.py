@@ -286,7 +286,7 @@ class cog_Uno(commands.Cog):
             await self.debug_print("... discard after playing: " + str(self.discard), ctx)
 
             if len(self.hands[player]) == 0:
-                await self.channel_send("<@" + str(player.id) + "> Wins! Congrats. The game is now over!", ctx)
+                await self.channel_print("<@" + str(player.id) + "> Wins! Congrats. The game is now over!", ctx)
                 await self.debug_print("... ending game", ctx)
                 self.end_game()
                 return
@@ -430,11 +430,11 @@ class cog_Uno(commands.Cog):
 
         await self.debug_print("... active player is: " + self.players[self.turn].name, ctx)
         await self.send_hand(self.players[self.turn])
-        await self.channel_send("<@" + str(self.players[self.turn].id) + ">, it's your turn!", ctx)
+        await self.channel_print("<@" + str(self.players[self.turn].id) + ">, it's your turn!", ctx)
         top_msg = "Top of the discard pile is: " + self.card_name(self.discard[-1])
         if self.discard[-1][0] == "wild":
             top_msg += " (" + self.top_color + ")"
-        await self.channel_send(top_msg, ctx)
+        await self.channel_print(top_msg, ctx)
 
         self.call_level -= 1
 

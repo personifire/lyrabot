@@ -5,9 +5,9 @@ Priorities:
 
 UNO STUFF
   The actual "UNO!" part of uno
-  Timers -- turn reminders, autokicks, etc.
+  Timers -- turn reminders, autokicks, etc. (Use client.loop.call_later ?)
   More obvious layout for cards you can/can't play (bold? organization?)
-  Emoji reacts to play (?)
+  Emoji reacts to play (like, 0-9, multiple messages for big hands?)
   House rules(?)
 
 Roll stuff

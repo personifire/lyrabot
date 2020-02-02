@@ -34,13 +34,12 @@ class search(commands.Cog):
 
     @commands.command()
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def search(self, ctx, *args):
+    async def search(self, ctx, *, args = ""):
         tags = []
-        joinargs = " ".join(args)
-        if "_" in joinargs:
-            joinargs = joinargs.replace(" ", ",")
-            joinargs = joinargs.replace("_", " ")
-        tags = list(filter(None, [tag.strip() for tag in joinargs.split(",")]))
+        if "_" in args:
+            args = args.replace(" ", ",")
+            args = args.replace("_", " ")
+        tags = list(filter(None, [tag.strip() for tag in args.split(",")]))
 
         # meme joke
         youremom = ["you're mom", "youre mom", "you'remom", "youremom"]
@@ -83,7 +82,7 @@ class search(commands.Cog):
             tags = " ".join(tags).split(" ")
 
         if not posted:
-            await ctx.channel.send('No results for search "' + joinargs + '". Too niche!')
+            await ctx.channel.send('No results for search "' + args + '". Too niche!')
 
 def setup(client):
     client.add_cog(search(client))

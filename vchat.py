@@ -105,9 +105,11 @@ class vchat(commands.Cog):
 
     def play_next(self, ctx, err=None):
         if err:
+            print("play_next caught error:")
             print(err)
             #await ctx.channel.send("Something went wrong!")
         if ctx.guild.id in self.queue and len(self.queue[ctx.guild.id]) > 0:
+            print("play_next playing next song")
             player = self.queue[ctx.guild.id].pop(0)
             ctx.voice_client.play(player, after=lambda e: self.play_next(ctx, e))
 
@@ -138,6 +140,7 @@ class vchat(commands.Cog):
                 await ctx.channel.send("Can't do that " + ctx.message.author.name)
 
             if not ctx.voice_client.is_playing() and not ctx.voice_client.is_paused():
+                print("Nothing was in queue when " + url + " was queued")
                 self.play_next(ctx)
 
 
