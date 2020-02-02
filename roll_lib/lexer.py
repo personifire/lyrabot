@@ -23,7 +23,7 @@ class lexer():
         return self.Token("Operator", string[0]) if string[0] in "+-" else False
 
     def __T_DiceSpecifier(self, string):
-        isdicespecifier = string[0] == "d" and len(string) > 1 and string[1] in " (0123456789"
+        isdicespecifier = string[0] == "d" and len(string) > 1 and string[1] in " (0123456789+-"
         return self.Token("DiceSpecifier", string[0]) if isdicespecifier else False
 
     def __T_NaturalNumber(self, string):

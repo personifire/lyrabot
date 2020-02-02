@@ -1,5 +1,7 @@
 import random
 
+# explain only top level results
+
 def total(lst):
     total = 0
     for val in lst:
@@ -70,7 +72,7 @@ class Operator():
 class Integer():
     def __init__(self, number, operator = None):
         try:
-            value = int(number, 0)
+            value = int(number)
         except Exception as e:
             value = 0
             raise e
@@ -123,9 +125,13 @@ class Drop():
             return [0]
 
         if self.droparg:
-            return rollseq[drops:]
+            for drop in range(drops):
+                rollseq.remove(min(rollseq))
         else:
-            return rollseq[:-drops]
+            for drop in range(drops):
+                rollseq.remove(max(rollseq))
+
+        return rollseq
 
 class Explode():
     def __init__(self, exploderange = Integer("1")):
