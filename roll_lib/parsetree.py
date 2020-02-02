@@ -46,10 +46,9 @@ class RollTerminal(Roll):
         if dicenum < 0:
             rolls = [-self.rand_dice(facenum) for roll in range(-dicenum)]
         elif dicenum == 0:
-            rolls = [0]
+            rolls = []
         else:
             rolls = [ self.rand_dice(facenum) for roll in range(dicenum)]
-        rolls.sort()
 
         if self.actionseq:
             rolls = self.actionseq(rolls)
@@ -61,9 +60,9 @@ class RollTerminal(Roll):
 class Operator():
     def __init__(self, operator):
         if operator == "+":
-            self.call = lambda a, b: sorted(a + b)
+            self.call = lambda a, b: a + b
         else: # operator == "-":
-            self.call = lambda a, b: sorted(a + list(map(lambda x: -x, b)))
+            self.call = lambda a, b: a + list(map(lambda x: -x, b))
 
     def __call__(self, lval, rval):
         value = self.call(lval, rval)
@@ -121,8 +120,8 @@ class Drop():
         elif drops == 0:
             return rollseq
 
-        if drops > len(rollseq):
-            return [0]
+        if drops >= len(rollseq):
+            return []
 
         if self.droparg:
             for drop in range(drops):
