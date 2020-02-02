@@ -26,7 +26,7 @@ class roll(commands.Cog):
         for die in rolls:
             value += die
 
-        await ctx.channel.send(ctx.author.mention + ", you rolled: " + str(value) + str(rolls))
+        await ctx.channel.send(ctx.author.mention + ", you rolled: " + str(value) + " " + str(rolls))
 
 
     def cog_unload(self):
