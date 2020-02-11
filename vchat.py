@@ -107,15 +107,13 @@ class vchat(commands.Cog):
         if err:
             print("play_next caught error:")
             print(err)
-            #await ctx.channel.send("Something went wrong!")
         if ctx.guild.id in self.queue and len(self.queue[ctx.guild.id]) > 0:
-            print("play_next playing next song")
             player = self.queue[ctx.guild.id].pop(0)
             ctx.voice_client.play(player, after=lambda e: self.play_next(ctx, e))
+            print("play_next playing next song: " + player.title)
 
 
-    # dirty copy/paste job to make this an alias for !play
-    @commands.command()
+    @commands.command(aliases = ["play"])
     async def vplay(self, ctx, *search):
         search = " ".join(search)
         server = ctx.guild
@@ -140,7 +138,7 @@ class vchat(commands.Cog):
                 await ctx.channel.send("Can't do that " + ctx.message.author.name)
 
             if not ctx.voice_client.is_playing() and not ctx.voice_client.is_paused():
-                print("Nothing was in queue when " + url + " was queued")
+                print("Nothing was in queue when " + player.title + " was queued")
                 self.play_next(ctx)
 
 

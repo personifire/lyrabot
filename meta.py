@@ -46,6 +46,7 @@ class meta(commands.Cog):
         output_capture = io.StringIO()
 
         funcstr = f'async def func():\n{textwrap.indent(code, "  ")}'
+        print("evaluating code:\n" + funcstr + "#----------")
 
         try:
             exec(funcstr, env)
