@@ -63,9 +63,6 @@ class search(commands.Cog):
                 return
             else:
                 extratags = ["-grimdark", "-anthro"]
-                if 'safe' not in tags:
-                    extratags.append("-safe")
-                tags.extend(extratags)
 
         for attempt in range(2):
             results = self.searcher.query(*(tags + extratags)).sort_by(sort.RANDOM).limit(1)
