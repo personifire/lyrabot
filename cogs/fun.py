@@ -94,44 +94,9 @@ class fun(commands.Cog):
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def pop(self, ctx):
         pops = ["glim", "shy", "twi", "rara", "pink", "aj", "dash", "spike", "sun", "lyra"]
-        output = "pop/" + random.choice(pops) + ".png"
+        output = "../pop/" + random.choice(pops) + ".png"
         async with ctx.channel.typing():
             await ctx.channel.send(file=discord.File(output, "pop.png"))
-
-
-#    @commands.command()
-#    @commands.cooldown(7, 10, commands.BucketType.user)
-#    async def roll(self, ctx, *args):
-#        if not args[0].isdigit() or int(args[0]) <= 0:
-#            await ctx.channel.send("Uhm, I don't think I can roll that...")
-#            return
-#
-#        faces = int(args[0])
-#        results = []
-#        message = ctx.author.mention
-#        if int(args[0]) > 0:
-#            modifier = 0
-#            for arg in args[1:]:
-#                if arg[0].lower() == 'x' and arg[1:].isdigit():
-#                    for x in range(int(arg[1:])-1):
-#                        die = random.randint(1, faces)
-#                        die += modifier
-#                        results.append(die)
-#                elif arg[0].lower() == '+' and arg[1:].isdigit():
-#                    modifier += int(arg[1:])
-#                elif arg[0].lower() == '-' and arg[1:].isdigit():
-#                    modifier -= int(arg[1:])
-#
-#        results.append(random.randint(1, faces) + modifier)
-#        roll = results[0]
-#        message += " " + str(results[0])
-#        for die in results[1:]:
-#            roll += die
-#            message += ", " + str(die)
-#        message += ": " + str(roll)
-#        if roll <= 0:
-#            message += " (rounds to 1)"
-#        await ctx.channel.send(message)
 
 
     @commands.command()
