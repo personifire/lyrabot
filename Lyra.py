@@ -256,7 +256,7 @@ def load_extensions():
     all_extensions_loaded = True
     for extension in EXTENSIONS:
         try:
-            client.load_extension(extension)
+            client.load_extension(EXTENSIONDIR + "." + extension)
             print('Loaded {}'.format(extension))
         except Exception as error:
             print('{} cannot be loaded. [{}]'.format(extension, error))
