@@ -8,7 +8,7 @@ from discord.ext import commands
 STAR = 410660094083334155
 PERS = 347100862125965312
 EXTENSIONDIR = 'cogs'
-EXTENSIONS = ['react', 'fun', 'search', 'vchat', 'uno', 'roll', 'meta']
+EXTENSIONS = ['react', 'fun', 'search', 'vchat', 'uno', 'roll', 'meta', 'admin']
 
 owners = [PERS]
 owners = set(owners)
