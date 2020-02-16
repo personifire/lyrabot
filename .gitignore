@@ -11,3 +11,4 @@ share/
 
 # Application
 token.txt
+data/*

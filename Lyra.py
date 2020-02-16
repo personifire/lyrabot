@@ -9,6 +9,7 @@ STAR = 410660094083334155
 PERS = 347100862125965312
 EXTENSIONDIR = 'cogs'
 EXTENSIONS = ['react', 'fun', 'search', 'vchat', 'uno', 'roll', 'meta', 'admin']
+EXTENSIONS = [EXTENSIONDIR + "." + ext for ext in EXTENSIONS]
 
 owners = [PERS]
 owners = set(owners)
@@ -256,7 +257,7 @@ def load_extensions():
     all_extensions_loaded = True
     for extension in EXTENSIONS:
         try:
-            client.load_extension(EXTENSIONDIR + "." + extension)
+            client.load_extension(extension)
             print('Loaded {}'.format(extension))
         except Exception as error:
             print('{} cannot be loaded. [{}]'.format(extension, error))
