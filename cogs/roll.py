@@ -38,7 +38,7 @@ class roll(commands.Cog):
 
 
 
-    @commands.command()
+    @commands.command(aliases = ["roll-save", "rollsave", "roll_sv", "roll-sv"])
     async def roll_save(self, ctx, rollname, *, rollstring):
         await self.roll(ctx, rollstring=rollstring)
 
@@ -54,8 +54,8 @@ class roll(commands.Cog):
 
 
 
-    @commands.command()
-    async def roll_load(self, ctx, rollname):
+    @commands.command(aliases = ["roll-load", "rollload", "roll_ld", "roll-ld"])
+    async def roll_load(self, ctx, *, rollname):
         saved = self.get_saved_rolls()
         if saved and str(ctx.author.id) in saved and rollname in saved[str(ctx.author.id)]:
             await self.roll(ctx, rollstring=saved[str(ctx.author.id)][rollname])
@@ -65,8 +65,8 @@ class roll(commands.Cog):
 
 
 
-    @commands.command()
-    async def roll_delete(self, ctx, rollname):
+    @commands.command(aliases = ["roll-delete", "rolldelete", "roll_del", "roll-del"])
+    async def roll_delete(self, ctx, *, rollname):
         saved = self.get_saved_rolls()
         if saved and str(ctx.author.id) in saved and rollname in saved[str(ctx.author.id)]:
             del saved[str(ctx.author.id)][rollname]
@@ -78,7 +78,7 @@ class roll(commands.Cog):
 
 
 
-    @commands.command()
+    @commands.command(aliases = ["roll-list", "rolllist", "roll_ls", "roll-ls"])
     async def roll_list(self, ctx):
         saved = self.get_saved_rolls()
         if saved and str(ctx.author.id) in saved and len(saved[str(ctx.author.id)]) > 0:
