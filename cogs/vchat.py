@@ -54,15 +54,17 @@ class vchat(commands.Cog):
     @commands.command()
     @commands.cooldown(1, 10, commands.BucketType.guild)
     async def vchat(self, ctx):
-        output =""
-        output += "*!join* - Joins the user's voice channel\n"
-        output += "*!leave* - Leaves the voice channel\n"
-        output += "*!play* [url] OR [\"search term\"] - Plays or queues audio from the url or searched video in the voice channel after a short delay\n"
-        output += "*!pause* - Pauses the audio currently playing in the voice channel\n"
-        output += "*!skip [queue number]*  - Ends playback of the selected audio\n"
-        output += "      if no number is provided, ends playback of the current audio\n"
-        output += "*!resume* - Resumes playback of the current audio\n"
-        output += "*!queue* - Displays the audio currently in the queue\n"
+        """ Outputs some custom help """
+        output =  "```"
+        output += "!join                  Joins the user's voice channel\n"
+        output += "!leave                 Leaves the voice channel\n"
+        output += "!play [url | search]   Plays or queues audio from the url or search term\n"
+        output += "!pause                 Pauses playback of the current audio\n"
+        output += "!resume                Resumes playback of the current audio\n"
+        output += "!skip [queue number]   Ends playback of the selected audio\n"
+        output += "                         if no number is provided, ends playback of the current audio\n"
+        output += "!queue                 Displays the audio currently in the queue\n"
+        output += "```"
         await ctx.channel.send(output)
 
 
@@ -80,6 +82,7 @@ class vchat(commands.Cog):
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.guild)
     async def join(self, ctx):
+        """ Joins the user's voice channel """
         if ctx.author.voice and ctx.author.voice.channel:
             channel = ctx.author.voice.channel
 
@@ -97,6 +100,7 @@ class vchat(commands.Cog):
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.guild)
     async def leave(self, ctx):
+        """ Leaves the voice channel """
         if await self.leave_channel(ctx.guild):
             await ctx.channel.send("Later!")
         else:
@@ -115,6 +119,7 @@ class vchat(commands.Cog):
 
     @commands.command(aliases = ["play"])
     async def vplay(self, ctx, *search):
+        """ Plays or queues audio from the url or search term """
         search = " ".join(search)
         server = ctx.guild
 
@@ -145,6 +150,7 @@ class vchat(commands.Cog):
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.guild)
     async def pause(self, ctx):
+        """ Pauses playback of the current audio """
         if ctx.voice_client and ctx.voice_client.is_playing() and not ctx.voice_client.is_paused():
             ctx.voice_client.pause()
         else:
@@ -154,6 +160,7 @@ class vchat(commands.Cog):
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.guild)
     async def resume(self, ctx):
+        """ Resumes playback of the current audio """
         if ctx.voice_client and ctx.voice_client.is_paused():
             ctx.voice_client.resume()
         else:
@@ -162,7 +169,11 @@ class vchat(commands.Cog):
 
     @commands.command()
     @commands.cooldown(1, 2, commands.BucketType.guild)
-    async def skip(self, ctx, index = 0):
+    async def skip(self, ctx, index:int = 0):
+        """ Skips the current song
+
+        if no number is provided, ends playback of the current audio
+        """
         if ctx.guild.id not in self.queue:
             await ctx.channel.send("lol good one")
             return
@@ -180,6 +191,7 @@ class vchat(commands.Cog):
     @commands.command()
     @commands.cooldown(1, 5, commands.BucketType.guild)
     async def queue(self, ctx):
+        """ Displays the audio currently in the queue """
         output = ""
 
         if ctx.guild.id in self.queue:

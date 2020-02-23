@@ -17,6 +17,11 @@ emotes = [   # emote name         # emote id
          ]
 
 class react(commands.Cog):
+    """ Reacts or posts a few emojis! 
+
+    Use `!apples` or others to post an emoji
+    Mention a user to react to their latest post
+    """
     def __init__(self, client):
         self.client = client
     #    self.reacts = []
@@ -42,6 +47,7 @@ class react(commands.Cog):
     @commands.command()
     @commands.cooldown(1, 15, commands.BucketType.channel)
     async def react(self):
+        """ Lists all emotes available """
         output = ""
         for emote in emotes:
             output += emote[0] + ", "
@@ -57,62 +63,62 @@ class react(commands.Cog):
         else:
             await ctx.channel.send(emote_name)
 
-    @commands.command()
+    @commands.command(hidden=True)
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def apples(self, ctx):
         await self.add_emote("<:apples:525139683395764244>", ctx)
 
-    @commands.command()
+    @commands.command(hidden=True)
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def angery(self, ctx):
         await self.add_emote("<a:ANGERY:525142734684815370>", ctx)
 
-    @commands.command()
+    @commands.command(hidden=True)
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def blep(self, ctx):
         await self.add_emote("<:blep:532497085254205450>", ctx)
 
-    @commands.command()
+    @commands.command(hidden=True)
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def dab(self, ctx):
         await self.add_emote("<:dab:531755608467046401>", ctx)
 
-    @commands.command()
+    @commands.command(hidden=True)
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def default(self, ctx):
         await self.add_emote("<a:default:531762705128751105>", ctx)
 
-    #@commands.command()
+    #@commands.command(hidden=True)
     #@commands.cooldown(1, 3, commands.BucketType.user)
     #async def excite(self, ctx):
     #    await self.add_emote("<a:excite:531769597108551691>", ctx)
 
-    @commands.command()
+    @commands.command(hidden=True)
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def floss(self, ctx):
         await self.add_emote("<a:floss:531762332121169930>", ctx)
 
-    @commands.command()
+    @commands.command(hidden=True)
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def flyra(self, ctx):
         await self.add_emote("<a:flyra:531755302996148237>", ctx)
 
-    @commands.command()
+    @commands.command(hidden=True)
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def lyravator(self, ctx):
         await self.add_emote("<a:lyravator:531772198910689280>", ctx)
 
-    @commands.command()
+    @commands.command(hidden=True)
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def scared(self, ctx):
         await self.add_emote("<:scared:532497591426875394>", ctx)
 
-    @commands.command()
+    @commands.command(hidden=True)
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def swiggityswooty(self, ctx):
         await self.add_emote("<a:swiggityswooty:531779000251580416>", ctx)
 
-    @commands.command()
+    @commands.command(hidden=True)
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def thonk(self, ctx):
         await self.add_emote("<:thonk:532534756093460481>", ctx)

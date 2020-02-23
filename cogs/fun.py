@@ -13,6 +13,7 @@ class fun(commands.Cog):
     @commands.command()
     @commands.cooldown(2, 7, commands.BucketType.user)
     async def boop(self, ctx):
+        """ boop! """
         if ctx.message.mentions:
             user = ctx.message.mentions[0]
             if self.client.user in ctx.message.mentions:
@@ -33,6 +34,7 @@ class fun(commands.Cog):
     @commands.command()
     @commands.cooldown(2, 7, commands.BucketType.user)
     async def flip(self, ctx):
+        """ Flips a coin """
         coin = random.randint(0, 99)
         result = "Heads"
         if coin < 50:
@@ -42,6 +44,7 @@ class fun(commands.Cog):
     @commands.command()
     @commands.cooldown(2, 7, commands.BucketType.user)
     async def kill(self, ctx):
+        u""" \u1F52 """
         output = ""
         data = [
                 "*banishes {} to the moon*",
@@ -93,6 +96,7 @@ class fun(commands.Cog):
     @commands.command()
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def pop(self, ctx):
+        """ pop """
         pops = ["glim", "shy", "twi", "rara", "pink", "aj", "dash", "spike", "sun", "lyra"]
         output = "../pop/" + random.choice(pops) + ".png"
         async with ctx.channel.typing():
@@ -102,6 +106,7 @@ class fun(commands.Cog):
     @commands.command()
     @commands.cooldown(2, 7, commands.BucketType.user)
     async def rr(self, ctx):
+        """ Russian roulette! """
         if self.russianCount > 0:
             await ctx.channel.send(ctx.message.author.mention + ' *click*')
             self.russianCount -= 1
@@ -112,6 +117,7 @@ class fun(commands.Cog):
     @commands.command()
     @commands.cooldown(2, 7, commands.BucketType.user)
     async def tableflip(self, ctx):
+        """ flips a table """
         await ctx.channel.send('(ノ°Д°）ノ︵ ┻━┻')
 
 

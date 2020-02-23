@@ -15,7 +15,6 @@ owners = [PERS]
 owners = set(owners)
 
 client = commands.Bot(command_prefix = '!', owner_ids = owners)
-client.remove_command('help')
 
 status = True
 
@@ -126,32 +125,6 @@ async def on_message(message):
 
 ######################################################################################################################
 
-
-@client.command()
-@commands.cooldown(1, 45, commands.BucketType.channel)
-async def help(ctx):
-    output = ""
-    output += "*!avatar [@user]* - Returns a url of the users avatar\n"
-    output += "*!bon* - sends a bon back at you\n"
-    output += "*!boop [@user]* - The most heinous of crimes\n"
-    output += "*!emote [:emote:] -anim* - Returns a url of the emote'\n"
-    output += "    append a *-anim* to retrieve the gif of an animated emote\n"
-    output += "*!flip* - Flips a coin\n"
-    output += "*!kill [@user]* - kills in style\n"
-    output += "*!pop* - :pop:\n"
-    output += "*!react* - Lists all emotes Lyra is capable of using\n"
-    output += "*!roll [number]* - Rolls a dice, defaults to 20\n"
-    output += "*!rr* - Russian Roulette, try not to get shot\n"
-    output += "*!search* [tag] - Searches Derpibooru for a random image.\n"
-    output += "      Can take either commas or spaces between search terms\n"
-    output += "      If using spaces between tags, use '_' for internal spaces\n"
-    output += "      EX: 'lyra_heartstrings cute' will search for lyra + cute\n"
-    output += "      if no tags are added a random image will be pulled up\n"
-    output += "      No anthro or grimdark content!\n"
-    output += "*!tableflip* - Flips a table\n"
-    output += "*!uno* - Displays the list of commands for Uno\n"
-    output += "*!vchat* - Displays the list of commands for the voice channel\n"
-    await ctx.channel.send(output)
 
 @client.command()
 @commands.cooldown(2, 7, commands.BucketType.user)

@@ -21,10 +21,14 @@ Software is furnished to do so, subject to the following conditions:
 
     The above copyright notice and this permission notice shall be included in
     all copies or substantial portions of the Software.
-"""
 
-"""
-This code contains many samples taken from https://github.com/Rapptz/RoboDanny
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
 """
 
 class meta(commands.Cog):
@@ -38,6 +42,10 @@ class meta(commands.Cog):
 
 
     async def evaluate_code(self, ctx, code):
+        """ evaluates a given string of python code in local context
+
+        This code contains many samples taken from https://github.com/Rapptz/RoboDanny
+        """
         env = { 'client': self.client, }
         env.update(globals())
         env.update(locals())
@@ -75,6 +83,7 @@ class meta(commands.Cog):
     @commands.command()
     @commands.is_owner()
     async def wait(self, ctx, delay: int, *, code = ""):
+        """ evaluates a given block of python code in the local context after a given delay in seconds """
         if not delay:
             await ctx.send("I need a time delay in seconds, please!")
             return
@@ -89,8 +98,7 @@ class meta(commands.Cog):
     @commands.command(aliases = ["exec"])
     @commands.is_owner()
     async def eval(self, ctx, *, code = ""):
-        """ evaluates given code 
-            heavily "inspired" by https://github.com/Rapptz/RoboDanny """
+        """ evaluates a given block of python code using the local context """
         if not code:
             await ctx.send("Give me some code to run! I have all globals, locals, and `client` in scope. Indent with two spaces, please.")
             return

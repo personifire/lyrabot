@@ -22,7 +22,12 @@ ideas:
 
 DEAL_SIZE = 7
 
-class cog_Uno(commands.Cog):
+class Uno(commands.Cog):
+    """ Runs a game of uno!
+
+    Join or leave an uno lobby with other players, and start the game whenever you're ready.
+    May be slightly quirky when used across multiple servers...
+    """
     def __init__(self, client):
         self.lock       = asyncio.Lock()
         self.debug      = False
@@ -66,6 +71,7 @@ class cog_Uno(commands.Cog):
 
     @uno.command()
     async def join(self, ctx):
+        """ Joins the lobby """
         await self.debug_print("join entered...", ctx)
         self.call_level += 1
 
@@ -89,6 +95,7 @@ class cog_Uno(commands.Cog):
 
     @uno.command()
     async def leave(self, ctx):
+        """ Leaves the lobby or the game """
         await self.debug_print("leave entered...", ctx)
         self.call_level += 1
 
@@ -113,6 +120,7 @@ class cog_Uno(commands.Cog):
 
     @uno.command()
     async def start(self, ctx):
+        """ Starts a game with everybody in the lobby """
         await self.debug_print("start entered...", ctx)
         self.call_level += 1
 
@@ -156,6 +164,7 @@ class cog_Uno(commands.Cog):
 
     @uno.command()
     async def stop(self, ctx):
+        """ Votes to end the game early """
         await self.debug_print("stop entered...", ctx)
         self.call_level += 1
 
@@ -185,6 +194,7 @@ class cog_Uno(commands.Cog):
 
     @uno.command()
     async def kick(self, ctx, *args):
+        """ Tries to votekick the mentioned player(s) """
         await self.debug_print("kick entered...", ctx)
         self.call_level += 1
 
@@ -229,6 +239,7 @@ class cog_Uno(commands.Cog):
 
     @uno.command()
     async def play(self, ctx, *args):
+        """ Plays a card from your hand """
         await self.debug_print("play entered...", ctx)
         self.call_level += 1
         player = ctx.author
@@ -296,6 +307,7 @@ class cog_Uno(commands.Cog):
 
     @uno.command()
     async def draw(self, ctx, *args):
+        """ Draws cards from the deck """
         await self.debug_print("draw entered...", ctx)
         self.call_level += 1
         player = ctx.author
@@ -333,6 +345,7 @@ class cog_Uno(commands.Cog):
 
     @uno.command()
     async def hand(self, ctx):
+        """ Tells you what cards are in your hand """
         await self.debug_print("hand entered...", ctx)
         self.call_level += 1
 
@@ -347,7 +360,7 @@ class cog_Uno(commands.Cog):
 
         self.call_level -= 1
 
-    @uno.command()
+    @uno.command(hidden=True)
     async def debug(self, ctx):
         await self.debug_print("debug entered...", ctx)
         self.debug = not self.debug
@@ -504,4 +517,4 @@ class cog_Uno(commands.Cog):
         self.deck += [("wild", wildtype)   for wildtype in wilds]
 
 def setup(client):
-    client.add_cog(cog_Uno(client))
+    client.add_cog(Uno(client))

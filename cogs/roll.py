@@ -12,7 +12,12 @@ SAVE_DIR      = "data/"
 SAVE_FILENAME = SAVE_DIR + "saved_rolls.json"
 SAVE_BACKUP   = SAVE_DIR + "saved_rolls.json.bak"
 
-class roll(commands.Cog):
+class diceroll(commands.Cog):
+    """ Dice rolling functionality!
+
+    Capable of saving custom dice rolls on a per-user basis.
+    """
+
     def __init__(self, client):
         self.client = client
 
@@ -22,6 +27,15 @@ class roll(commands.Cog):
 
     @commands.command()
     async def roll(self, ctx, *, rollstring):
+        """ Rolls some dice
+
+        Understands most standard dice notation
+        Examples:
+            1d10 + 5
+            2d20 drop highest + 9
+            3d20 drop 2 - 1
+            (d6)d10
+        """
         try:
             rollexpr = roll_lib.parser.parser(rollstring)
             rolls    = rollexpr.roll()
@@ -40,6 +54,11 @@ class roll(commands.Cog):
 
     @commands.command(aliases = ["roll-save", "rollsave", "roll_sv", "roll-sv"])
     async def roll_save(self, ctx, rollname, *, rollstring):
+        """ Saves a roll
+
+        Rolls a given set of dice, then saves it under a custom alias for you
+        Will overwrite previously saved rolls under the same name
+        """
         await self.roll(ctx, rollstring=rollstring)
 
         saved = self.get_saved_rolls()
@@ -56,6 +75,7 @@ class roll(commands.Cog):
 
     @commands.command(aliases = ["roll-load", "rollload", "roll_ld", "roll-ld"])
     async def roll_load(self, ctx, *, rollname):
+        """ Looks up and rolls a saved roll """
         saved = self.get_saved_rolls()
         if saved and str(ctx.author.id) in saved and rollname in saved[str(ctx.author.id)]:
             await self.roll(ctx, rollstring=saved[str(ctx.author.id)][rollname])
@@ -67,6 +87,7 @@ class roll(commands.Cog):
 
     @commands.command(aliases = ["roll-delete", "rolldelete", "roll_del", "roll-del"])
     async def roll_delete(self, ctx, *, rollname):
+        """ Looks up and deletes a saved roll """
         saved = self.get_saved_rolls()
         if saved and str(ctx.author.id) in saved and rollname in saved[str(ctx.author.id)]:
             del saved[str(ctx.author.id)][rollname]
@@ -80,6 +101,7 @@ class roll(commands.Cog):
 
     @commands.command(aliases = ["roll-list", "rolllist", "roll_ls", "roll-ls"])
     async def roll_list(self, ctx):
+        """ Lists all available saved rolls """
         saved = self.get_saved_rolls()
         if saved and str(ctx.author.id) in saved and len(saved[str(ctx.author.id)]) > 0:
             message = "```"
@@ -116,4 +138,4 @@ class roll(commands.Cog):
 
 
 def setup(client):
-    client.add_cog(roll(client))
+    client.add_cog(diceroll(client))
