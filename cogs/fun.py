@@ -44,7 +44,7 @@ class fun(commands.Cog):
     @commands.command()
     @commands.cooldown(2, 7, commands.BucketType.user)
     async def kill(self, ctx):
-        u""" \u1F52 """
+        """ \N{HOCHO} """
         output = ""
         data = [
                 "*banishes {} to the moon*",

@@ -129,11 +129,13 @@ async def on_message(message):
 @client.command()
 @commands.cooldown(2, 7, commands.BucketType.user)
 async def bon(ctx):
+    """ bon """
     await ctx.channel.send('bon')
 
 @client.command()
 @commands.cooldown(2, 7, commands.BucketType.user)
 async def avatar(ctx):
+    """ Retrieves a link to the mentioned user's avatar """
     if len(ctx.message.mentions) == 0:
         await ctx.channel.send("Mention a user so I know whose avatar to grab!")
     async with ctx.channel.typing():
@@ -142,6 +144,7 @@ async def avatar(ctx):
 @client.command()
 @commands.cooldown(2, 7, commands.BucketType.user)
 async def emote(ctx):
+    """ Retrieves a link to the image for the given emoji """
     name = ctx.message.content.replace("!emote ", "")
 
     idstart  = name.find(':', name.find(':') + 1) + 1
@@ -161,10 +164,12 @@ async def emote(ctx):
 
 @client.command()
 async def dm(ctx):
+    """ also bon """
     await ctx.message.author.send("bon")
 
 @client.command()
 async def nuke(ctx, *args):
+    """ <:dab:531755608467046401> """
     author = ctx.author
     if author.guild_permissions.administrator:
         msg = ""
@@ -178,6 +183,7 @@ async def nuke(ctx, *args):
 @client.command()
 @commands.is_owner()
 async def reload(ctx, *args):
+    """ Reloads all current extensions """
     await ctx.channel.send("Alright, reloading!")
     for extension in EXTENSIONS:
         client.reload_extension(extension)
@@ -185,6 +191,7 @@ async def reload(ctx, *args):
 
 @client.command()
 async def snuggle(ctx):
+    """ for snugs """
     if ctx.message.author.id != STAR:
         return
     global status
@@ -197,6 +204,7 @@ async def snuggle(ctx):
 
 @client.command()
 async def rest(ctx, *args):
+    """ For when lyra gets tired """
     if ctx.author.id in owners:
             sleepytwi = discord.utils.get(client.emojis, name = 'sleepytwi')
             if sleepytwi:

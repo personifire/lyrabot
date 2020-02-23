@@ -58,6 +58,7 @@ class Uno(commands.Cog):
 
     @commands.group(invoke_without_command=False)
     async def uno(self, ctx):
+        """ Prints help for uno """
         if ctx.invoked_subcommand is None:
             await ctx.channel.send(self.helpstr())
         self.call_level = 0

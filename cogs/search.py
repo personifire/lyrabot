@@ -35,6 +35,7 @@ class search(commands.Cog):
     @commands.command()
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def search(self, ctx, *, args = ""):
+        """ Searches derpibooru for a given set of tags """
         tags = []
         if "_" in args:
             args = args.replace(" ", ",")
