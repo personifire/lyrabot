@@ -67,8 +67,7 @@ class vchat(commands.Cog):
                     if not voice_client.is_playing() and not voice_client.is_paused():
                         print("Nothing was in queue when " + player.title + " was queued")
                         self.play_next(message)
-                    break
-        await self.client.process_commands(message)
+                    return
 
     @commands.command()
     @commands.cooldown(1, 10, commands.BucketType.guild)
