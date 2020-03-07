@@ -51,6 +51,25 @@ class vchat(commands.Cog):
         self.client = client
         self.queue = {}
 
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        if message.content.lower() == "gay chat" and message.channel.name.lower() == "vchat":
+            for vc in message.guild.voice_channels:
+                if len(vc.members) > 0:
+                    voice_client = message.guild.voice_client
+                    await self.join_channel(voice_client, vc)
+                    voice_client = message.guild.voice_client
+
+                    player = discord.FFmpegPCMAudio("files/urmom.mp3", **ffmpeg_options)
+                    player.title = "you're mom gay"
+
+                    self.queue[message.guild.id].append(player)
+                    if not voice_client.is_playing() and not voice_client.is_paused():
+                        print("Nothing was in queue when " + player.title + " was queued")
+                        self.play_next(message)
+                    break
+        await self.client.process_commands(message)
+
     @commands.command()
     @commands.cooldown(1, 10, commands.BucketType.guild)
     async def vchat(self, ctx):
@@ -79,20 +98,23 @@ class vchat(commands.Cog):
             return False
 
 
+    async def join_channel(self, voice_client, channel):
+        if voice_client is None:
+            vc = await channel.connect()
+            self.queue[channel.guild.id] = []
+            print("connected to vc")
+            await self.client.change_presence(activity=discord.Game('ly.radio'))
+        elif voice_client.channel != channel:
+            await ctx.voice_client.move_to(channel)
+
+
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.guild)
     async def join(self, ctx):
         """ Joins the user's voice channel """
         if ctx.author.voice and ctx.author.voice.channel:
             channel = ctx.author.voice.channel
-
-            if ctx.voice_client is None:
-                self.queue[ctx.guild.id] = []
-                vc = await channel.connect()
-                print("connected to vc")
-                await self.client.change_presence(activity=discord.Game('ly.radio'))
-            elif ctx.voice_client.channel != channel:
-                await ctx.voice_client.move_to(channel)
+            await self.join_channel(ctx.voice_client, channel)
         else:
             await ctx.channel.send("*shrugs*")
 
@@ -113,7 +135,7 @@ class vchat(commands.Cog):
             print(err)
         if ctx.guild.id in self.queue and len(self.queue[ctx.guild.id]) > 0:
             player = self.queue[ctx.guild.id].pop(0)
-            ctx.voice_client.play(player, after=lambda e: self.play_next(ctx, e))
+            ctx.guild.voice_client.play(player, after=lambda e: self.play_next(ctx, e))
             print("play_next playing next song: " + player.title)
 
 
