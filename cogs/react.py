@@ -46,7 +46,7 @@ class react(commands.Cog):
 
     @commands.command()
     @commands.cooldown(1, 15, commands.BucketType.channel)
-    async def react(self):
+    async def react(self, ctx):
         """ Lists all emotes available """
         output = ""
         for emote in emotes:

@@ -2,12 +2,7 @@
 __pycache__*
 
 # Python virtual env
-bin/
-etc/
-lib/
-lib64
-pyvenv.cfg
-share/
+env/
 
 # Application
 token.txt

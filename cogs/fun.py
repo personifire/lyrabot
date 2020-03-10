@@ -98,7 +98,7 @@ class fun(commands.Cog):
     async def pop(self, ctx):
         """ pop """
         pops = ["glim", "shy", "twi", "rara", "pink", "aj", "dash", "spike", "sun", "lyra"]
-        output = "pop/" + random.choice(pops) + ".png"
+        output = "files/pop/" + random.choice(pops) + ".png"
         async with ctx.channel.typing():
             await ctx.channel.send(file=discord.File(output, "pop.png"))
 

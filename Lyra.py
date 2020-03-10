@@ -117,7 +117,7 @@ async def on_message(message):
         if "u lil shid" in message.content.lower():
             await message.channel.send('*pbbbtthhhhhh*')
         if "hmmnah.mp4" in message.content.lower():
-            await client.send_file(message.channel, "files/hmmnah.mp4")
+            await message.channel.send(file=discord.File("files/hmmnah.mp4"))
         if "lyra" in message.content.lower() and "best" in message.content.lower() and "not" not in message.content.lower():
             await message.channel.send('*blushes*')
 

@@ -6,7 +6,7 @@ import importlib
 import json
 import os
 
-import roll_lib.parser
+import lib.roll.parser
 
 SAVE_DIR      = "data/"
 SAVE_FILENAME = SAVE_DIR + "saved_rolls.json"
@@ -37,7 +37,7 @@ class diceroll(commands.Cog):
             (d6)d10
         """
         try:
-            rollexpr = roll_lib.parser.parser(rollstring)
+            rollexpr = lib.roll.parser.parser(rollstring)
             rolls    = rollexpr.roll()
         except Exception as e:
             errormsg = "I had trouble rolling that! ```" + str(e) + "```"
@@ -131,9 +131,9 @@ class diceroll(commands.Cog):
 
 
     def cog_unload(self):
-        importlib.reload(roll_lib.lexer)
-        importlib.reload(roll_lib.parser)
-        importlib.reload(roll_lib.parsetree)
+        importlib.reload(lib.roll.lexer)
+        importlib.reload(lib.roll.parser)
+        importlib.reload(lib.roll.parsetree)
 
 
 
