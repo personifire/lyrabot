@@ -34,7 +34,9 @@ class search(commands.Cog):
 
     async def do_escape_paren_snark(self, ctx, tags):
         searchstring = ", ".join(tags)
+
         escaped = False
+        quoted  = False
         balance = 0
         for char in searchstring:
             if escaped:
@@ -42,6 +44,14 @@ class search(commands.Cog):
                 continue
             elif char == "\\":
                 escaped = True
+                continue
+
+            if quoted:
+                if char == "\"":
+                    quoted = False
+                continue
+            elif char == "\"":
+                quoted = True
                 continue
 
             if char == "(":
