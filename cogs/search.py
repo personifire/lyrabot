@@ -34,7 +34,7 @@ class search(commands.Cog):
 
     @commands.command()
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def search(self, ctx, *, args = ""):
+    async def search(self, ctx, *, args = "*"):
         """ Searches derpibooru for a given set of tags """
         tags = []
         if "_" in args:
@@ -66,7 +66,7 @@ class search(commands.Cog):
                 extratags = ["-grimdark", "-anthro"]
 
         for attempt in range(2):
-            results = self.searcher.query(*(tags + extratags)).sort_by(sort.RANDOM).limit(1)
+            results = self.searcher.query(*extratags, "(" + ", ".join(tags) + ")").sort_by(sort.RANDOM).limit(1)
 
             if results is not None:
                 posted = False                         # ugly workaround because results doesn't say if there's anything inside unless you look
