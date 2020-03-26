@@ -32,6 +32,29 @@ class search(commands.Cog):
         return False
 
 
+    async def do_escape_paren_snark(self, ctx, tags):
+        searchstring = ", ".join(tags)
+        escaped = False
+        balance = 0
+        for char in searchstring:
+            if escaped:
+                escaped = False
+                continue
+            elif char == "\\":
+                escaped = True
+                continue
+
+            if char == "(":
+                balance += 1
+            elif char == ")":
+                balance -= 1
+
+            if balance < 0:
+                await ctx.channel.send("Very funny.")
+                return True
+        return False
+
+
     @commands.command()
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def search(self, ctx, *, args = "*"):
@@ -54,6 +77,9 @@ class search(commands.Cog):
         results = None
 
         # validate and choose content filtering tags
+        if await self.do_escape_paren_snark(ctx, tags):
+            return
+
         extratags = []
         if not ctx.channel.is_nsfw():
             if await self.do_sfw_snark(ctx, tags):
