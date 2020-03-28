@@ -109,7 +109,7 @@ async def on_message(message):
             elif 'discord' in message.content.lower():
                 await message.channel.send('https://youtu.be/xPfMb50dsOk')
 
-        if client.user.display_name in message.content.lower():
+        if client.user.display_name.lower() in message.content.lower():
             if 'hi' in message.content.lower() or 'hello' in message.content.lower() or 'sup' in message.content.lower():
                 await message.channel.send('Hi ' + message.author.display_name + '!')
             if 'rolls' in message.content.lower():
