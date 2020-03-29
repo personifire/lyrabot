@@ -1,12 +1,3 @@
-import discord
-from discord.ext import commands
-
-import asyncio
-from contextlib import redirect_stdout
-import io
-import textwrap
-import traceback
-
 """
 The MIT License (MIT)
 
@@ -30,6 +21,23 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
+
+import discord
+from discord.ext import commands
+
+import asyncio
+from contextlib import redirect_stdout
+import io
+import textwrap
+import traceback
+
+META_NAME  = 'meta'
+
+EXTENSIONDIR = 'cogs'
+EXTENSIONS = ['react', 'fun', 'search', 'vchat', 'uno', 'roll', META_NAME, 'admin']
+EXTENSIONS = [EXTENSIONDIR + '.' + ext for ext in EXTENSIONS]
+
+META_EXTENSION = EXTENSIONDIR + '.' + META_NAME
 
 class meta(commands.Cog):
     def __init__(self, client):
@@ -107,6 +115,32 @@ class meta(commands.Cog):
         await self.evaluate_code(ctx, code)
 
 
+    @commands.command()
+    @commands.is_owner()
+    async def reload(self, ctx, *args):
+        """ Reloads all current extensions """
+        await ctx.channel.send("Alright, reloading!")
+        for extension in EXTENSIONS:
+            self.client.reload_extension(extension)
+
+
 
 def setup(client):
     client.add_cog(meta(client))
+    if not client.loaded:
+        print('Loaded {}'.format(META_EXTENSION))
+        load_extensions(client)
+    client.loaded = True
+
+
+def load_extensions(client):
+    for extension in EXTENSIONS:
+        if extension == META_EXTENSION:
+            continue
+        try:
+            client.load_extension(extension)
+            print('Loaded {}'.format(extension))
+        except Exception as error:
+            print('{} cannot be loaded. [{}]'.format(extension, error))
+            raise error
+

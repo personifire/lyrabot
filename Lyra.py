@@ -7,9 +7,8 @@ from discord.ext import commands
 
 STAR = 410660094083334155
 PERS = 347100862125965312
-EXTENSIONDIR = 'cogs'
-EXTENSIONS = ['react', 'fun', 'search', 'vchat', 'uno', 'roll', 'meta', 'admin']
-EXTENSIONS = [EXTENSIONDIR + "." + ext for ext in EXTENSIONS]
+
+METAEXTENSION = "cogs.meta"
 
 owners = [PERS]
 owners = set(owners)
@@ -49,8 +48,7 @@ async def on_member_remove(member):
     if lyra is not None:
         await lyra.send(member.display_name + ' has left the server')
     else:
-        print(member.display_name + "left server: ")
-        print(member.guild)
+        print(member.display_name + "left server: " + member.guild)
 
 @client.event
 async def on_member_join(member):
@@ -181,15 +179,6 @@ async def nuke(ctx, *args):
         await ctx.channel.send("You're gonna have a bad time. Might need more perms for that!")
 
 @client.command()
-@commands.is_owner()
-async def reload(ctx, *args):
-    """ Reloads all current extensions """
-    await ctx.channel.send("Alright, reloading!")
-    for extension in EXTENSIONS:
-        client.reload_extension(extension)
-
-
-@client.command()
 async def snuggle(ctx):
     """ for snugs """
     if ctx.message.author.id != STAR:
@@ -234,19 +223,17 @@ def get_token():
             raise Exception("Could not find token")
     return token
 
-def load_extensions():
-    all_extensions_loaded = True
-    for extension in EXTENSIONS:
-        try:
-            client.load_extension(extension)
-            print('Loaded {}'.format(extension))
-        except Exception as error:
-            print('{} cannot be loaded. [{}]'.format(extension, error))
-            raise error
+def load_meta():
+    try:
+        client.loaded = False
+        client.load_extension(METAEXTENSION)
+    except Exception as e:
+        print('meta extension could not be loaded. [{}]'.format(extension, e))
+        raise e
 
 def main():
     token = get_token()
-    load_extensions()
+    load_meta()
 
     client.run(token)
 
