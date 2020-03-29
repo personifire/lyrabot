@@ -1,13 +1,80 @@
+import random
+import re
+
 import discord
 from discord.ext import commands
-import random
 
 class fun(commands.Cog):
+    """ Miscellaneous things that one might label "fun" """
     def __init__(self, client):
         self.client = client
         self.star_id = 410660094083334155
 
         self.russianCount = random.randint(0, 5)
+
+
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        if message.content and not message.author.bot:
+            if message.content == "Can I boop you?":
+                await message.channel.send("*gasp* but that's lewd!")
+
+            elif "screwbot " in message.content.lower() or " screwbot" in message.content.lower() or "screwbot" == message.content.lower():
+                await message.channel.send("<a:headcannonL:532554000818634783><:screwbot:532520479290818560><a:headcannonR:532554001321951262>")
+
+            elif 'hands ' in message.content.lower() or ' hands' in message.content.lower() or 'hands' == message.content.lower():
+                await message.channel.send("<:mfw:532548719510552586>")
+
+            elif ':' in message.content.lower():
+                new = message.content.lower().replace(":", "")
+                if "apples" in new:
+                    await message.channel.send("<:apples:525139683395764244>")
+                elif "angery" in new:
+                    await message.channel.send("<a:angery:525142734684815370>")
+                elif "blep" in new:
+                    await message.channel.send("<:blep:532497085254205450>")
+                elif "dab" in new:
+                    await message.channel.send("<:dab:531755608467046401>")
+                elif "default" in new:
+                    await message.channel.send("<a:default:531762705128751105>")
+                #elif "excite" in new:
+                    #await message.channel.send("<a:excite:525138734145077259>")
+                elif "flyra" in new:
+                    await message.channel.send("<a:flyra:531755302996148237>")
+                elif "lyravator" in new:
+                    await message.channel.send("<a:lyravator:531772198910689280>")
+                elif "scared" in new:
+                    await message.channel.send("<:scared:532497591426875394>")
+                elif "swiggityswooty" in new:
+                    await message.channel.send("<a:swiggityswooty:531779000251580416>")
+                elif "thonk" in new:
+                    await message.channel.send("<:thonk:532534756093460481>")
+
+            elif 'lyra' in message.content.lower() and 'play' in message.content.lower():
+                if 'despacito' in message.content.lower():
+                    await message.channel.send('https://youtu.be/kJQP7kiw5Fk')
+                elif 'sinking' in message.content.lower() and 'ships' in message.content.lower():
+                    await message.channel.send(' https://youtu.be/Tw09Lrf4EQc')
+                elif 'lullaby for a princess' in message.content.lower():
+                    await message.channel.send('https://youtu.be/H4tyvJJzSDk')
+                elif 'hold on' in message.content.lower():
+                    await message.channel.send('https://youtu.be/ryi-Iy0VyWs')
+                elif 'wow glimmer' in message.content.lower():
+                    await message.channel.send('https://youtu.be/12_WnaPmPI0')
+                elif 'discord' in message.content.lower():
+                    await message.channel.send('https://youtu.be/xPfMb50dsOk')
+
+            if self.client.user.display_name.lower() in message.content.lower():
+                if 'hi' in message.content.lower() or 'hello' in message.content.lower() or 'sup' in message.content.lower():
+                    await message.channel.send('Hi ' + message.author.display_name + '!')
+                if 'rolls' in message.content.lower():
+                    await message.channel.send("<:smuglyra:543975500562038784>")
+            if "u lil shid" in message.content.lower():
+                await message.channel.send('*pbbbtthhhhhh*')
+            if "hmmnah.mp4" in message.content.lower():
+                await message.channel.send(file=discord.File("files/hmmnah.mp4"))
+            if "lyra" in message.content.lower() and "best" in message.content.lower() and "not" not in message.content.lower():
+                await message.channel.send('*blushes*')
 
 
     @commands.command()
@@ -120,6 +187,32 @@ class fun(commands.Cog):
         """ flips a table """
         await ctx.channel.send('(ノ°Д°）ノ︵ ┻━┻')
 
+
+    @commands.command()
+    @commands.cooldown(2, 7, commands.BucketType.user)
+    async def avatar(self, ctx):
+        """ Gets a link to the mentioned user's avatar """
+        if len(ctx.message.mentions) == 0:
+            await ctx.channel.send("Mention a user so I know whose avatar to grab!")
+        async with ctx.channel.typing():
+            for user in ctx.message.mentions:
+                await ctx.channel.send(user.avatar_url)
+
+    @commands.command()
+    @commands.cooldown(2, 7, commands.BucketType.user)
+    async def emote(self, ctx, name):
+        """ Gets a link to the image for the given emoji """
+        match = re.match(r"<(a?):([a-zA-Z0-9\_]+):([0-9]+)?>$", name)
+
+        if match:
+            anim = match.group(1)
+            name = match.group(2)
+            id   = match.group(3)
+            emote = discord.PartialEmoji(name = name, animated = anim, id = id)
+
+            await ctx.channel.send(emote.url)
+        else:
+            await ctx.channel.send("Sorry, I can't find that one!")
 
 
 def setup(client):
