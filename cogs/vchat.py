@@ -70,6 +70,22 @@ class vchat(commands.Cog):
                         self.play_next(message)
                     return
 
+
+    @commands.Cog.listener()
+    async def on_voice_state_update(self, member, before, after):
+        vchannel = before.channel
+        if vchannel and vchannel.guild.id in self.queue:
+            vc = vchannel.guild.voice_client
+            if vc and len(vc.channel.members) == 1:
+                await self.leave_channel(vchannel.guild)
+
+
+    def cog_unload(self):
+        for guildid in self.queue.keys():
+            guild = discord.utils.get(self.client.guilds, id = guildid)
+            self.client.loop.create_task(guild.voice_client.disconnect())
+
+
     @commands.command()
     @commands.cooldown(1, 10, commands.BucketType.guild)
     async def vchat(self, ctx):
@@ -92,7 +108,8 @@ class vchat(commands.Cog):
             del self.queue[guild.id]
             await guild.voice_client.disconnect()
             print("disconnected from vc")
-            await self.client.change_presence(activity=discord.Game('her lyre'))
+            if len(self.queue) == 0:
+                await self.client.change_presence(activity=discord.Game('her lyre'))
             return True
         else:
             return False
@@ -226,20 +243,6 @@ class vchat(commands.Cog):
             await ctx.channel.send(output)
         else:
             await ctx.channel.send("No songs in queue")
-
-
-    @commands.Cog.listener()
-    async def on_voice_state_update(self, member, before, after):
-        vchannel = before.channel
-        if vchannel and vchannel.guild.id in self.queue:
-            vc = vchannel.guild.voice_client
-            if vc and len(vc.channel.members) == 1:
-                await self.leave_channel(vchannel.guild)
-
-
-    #def cog_unload():
-    #    for guild in thing:
-    #        self.leave_channel(guild)
 
 
 
