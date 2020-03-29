@@ -61,7 +61,7 @@ class vchat(commands.Cog):
                     await self.join_channel(voice_client, vc)
                     voice_client = message.guild.voice_client
 
-                    player = discord.FFmpegPCMAudio("files/urmom.mp3", **ffmpeg_options)
+                    player = discord.FFmpegPCMAudio("files/urmom.mp3", options = ffmpeg_options['options'])
                     player.title = "you're mom gay"
 
                     self.queue[message.guild.id].append(player)
