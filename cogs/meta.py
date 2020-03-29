@@ -28,6 +28,7 @@ from discord.ext import commands
 import asyncio
 from contextlib import redirect_stdout
 import io
+import subprocess
 import textwrap
 import traceback
 
@@ -120,17 +121,30 @@ class meta(commands.Cog):
     async def reload(self, ctx, *args):
         """ Reloads all current extensions """
         await ctx.channel.send("Alright, reloading!")
-        for extension in EXTENSIONS:
-            self.client.reload_extension(extension)
+        try:
+            pull_from_git()
+            self.client.reload_extension(META_EXTENSION)
+        except Exception as e:
+            await ctx.channel.send("... Er, I had some trouble on that reload. Sorry!")
+            raise e
 
 
 
 def setup(client):
     client.add_cog(meta(client))
-    if not client.loaded:
-        print('Loaded {}'.format(META_EXTENSION))
-        load_extensions(client)
-    client.loaded = True
+    print('Loaded {}'.format(META_EXTENSION))
+
+
+def pull_from_git():
+    output = subprocess.check_output(["git", "pull"]) # don't bother catching exceptions
+    print(output)
+
+
+def try_load(client, extension):
+    try:
+        client.load_extension(extension)
+    except commands.ExtensionAlreadyLoaded:
+        client.reload_extension(extension)
 
 
 def load_extensions(client):
@@ -138,7 +152,7 @@ def load_extensions(client):
         if extension == META_EXTENSION:
             continue
         try:
-            client.load_extension(extension)
+            try_load(client, extension)
             print('Loaded {}'.format(extension))
         except Exception as error:
             print('{} cannot be loaded. [{}]'.format(extension, error))
