@@ -130,11 +130,6 @@ class meta(commands.Cog):
 
 
 
-def setup(client):
-    client.add_cog(meta(client))
-    print('Loaded {}'.format(META_EXTENSION))
-
-
 def pull_from_git():
     output = subprocess.check_output(["git", "pull"]) # don't bother catching exceptions
     print(output)
@@ -143,8 +138,10 @@ def pull_from_git():
 def try_load(client, extension):
     try:
         client.load_extension(extension)
+        print('Loaded {}'.format(extension))
     except commands.ExtensionAlreadyLoaded:
         client.reload_extension(extension)
+        print('Reloaded {}'.format(extension))
 
 
 def load_extensions(client):
@@ -153,8 +150,12 @@ def load_extensions(client):
             continue
         try:
             try_load(client, extension)
-            print('Loaded {}'.format(extension))
         except Exception as error:
             print('{} cannot be loaded. [{}]'.format(extension, error))
             raise error
 
+
+def setup(client):
+    client.add_cog(meta(client))
+    print('Loaded {}'.format(META_EXTENSION))
+    load_extensions(client)

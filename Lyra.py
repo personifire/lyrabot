@@ -128,7 +128,6 @@ def get_token():
 
 def load_meta():
     try:
-        client.loaded = False
         client.load_extension(METAEXTENSION)
     except Exception as e:
         print('meta extension could not be loaded. [{}]'.format(extension, e))
