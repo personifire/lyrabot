@@ -63,6 +63,9 @@ class fun(commands.Cog):
                     await message.channel.send('https://youtu.be/12_WnaPmPI0')
                 elif 'discord' in message.content.lower():
                     await message.channel.send('https://youtu.be/xPfMb50dsOk')
+                elif 'imagine' in message.content.lower():
+                    await message.channel.send('https://youtu.be/YkgkThdzX-8')
+                    
 
             if self.client.user.display_name.lower() in message.content.lower():
                 if 'hi' in message.content.lower() or 'hello' in message.content.lower() or 'sup' in message.content.lower():
