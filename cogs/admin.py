@@ -12,7 +12,7 @@ class admin(commands.Cog):
     @commands.command()
     @commands.has_guild_permissions(manage_roles = True)
     @commands.bot_has_guild_permissions(manage_roles = True)
-    async def selfassign(self, ctx, role: discord.Role):
+    async def selfassign(self, ctx, *, role: discord.Role):
         msg = "Use any reaction to this post to self-assign the " 
         msg += "**" + role.name + "** (id: " + str(role.id) + ")"
         msg += " role! Or remove (or react then remove) to self-remove the role."
