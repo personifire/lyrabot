@@ -46,7 +46,7 @@ async def on_member_remove(member):
     if lyra is not None:
         await lyra.send(member.display_name + ' has left the server')
     else:
-        print(member.display_name + "left server: " + member.guild)
+        print(member.display_name + "left server: " + member.guild.name)
 
 @client.event
 async def on_member_join(member):
