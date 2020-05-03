@@ -50,6 +50,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
 class vchat(commands.Cog):
     def __init__(self, client):
         self.client = client
+        self.playing = ""
         self.queue = {}
 
     @commands.Cog.listener()
@@ -84,6 +85,7 @@ class vchat(commands.Cog):
         for guildid in self.queue.keys():
             guild = discord.utils.get(self.client.guilds, id = guildid)
             self.client.loop.create_task(guild.voice_client.disconnect())
+        self.queue = {}
 
 
     @commands.command()
@@ -150,10 +152,14 @@ class vchat(commands.Cog):
         if err:
             print("play_next caught error:")
             print(err)
-        if ctx.guild.id in self.queue and len(self.queue[ctx.guild.id]) > 0:
-            player = self.queue[ctx.guild.id].pop(0)
-            ctx.guild.voice_client.play(player, after=lambda e: self.play_next(ctx, e))
-            print("play_next playing next song: " + player.title)
+        if ctx.guild.id in self.queue:
+            if len(self.queue[ctx.guild.id]) > 0:
+                player = self.queue[ctx.guild.id].pop(0)
+                self.playing = player.title
+                ctx.guild.voice_client.play(player, after=lambda e: self.play_next(ctx, e))
+                print("play_next playing next song: " + player.title)
+            else:
+                self.playing = ""
 
 
     @commands.command(aliases = ["play"])
@@ -232,6 +238,9 @@ class vchat(commands.Cog):
     async def queue(self, ctx):
         """ Displays the audio currently in the queue """
         output = ""
+
+        if self.playing:
+            output += "Currently playing: " + self.playing
 
         if ctx.guild.id in self.queue:
             for index, queued in enumerate(self.queue[ctx.guild.id]):

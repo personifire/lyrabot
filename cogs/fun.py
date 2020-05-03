@@ -167,7 +167,7 @@ class fun(commands.Cog):
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def pop(self, ctx):
         """ pop """
-        pops = ["glim", "shy", "twi", "rara", "pink", "aj", "dash", "spike", "sun", "lyra"]
+        pops = ["glim", "shy", "twi", "rara", "pink", "aj", "dash", "spike", "sun", "lyra", "ab", "sb"]
         output = "files/pop/" + random.choice(pops) + ".png"
         async with ctx.channel.typing():
             await ctx.channel.send(file=discord.File(output, "pop.png"))
