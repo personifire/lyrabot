@@ -89,7 +89,6 @@ class vchat(commands.Cog):
 
 
     @commands.command()
-    @commands.is_owner()
     async def vtts(self, ctx, *, txt):
         if ctx.author.voice and ctx.author.voice.channel:
             await self.join_channel(ctx.guild.voice_client, ctx.author.voice.channel)
