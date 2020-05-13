@@ -1,3 +1,6 @@
+import asyncio
+import subprocess
+
 import discord
 from discord.ext import commands
 import discord.errors
@@ -47,6 +50,19 @@ class YTDLSource(discord.PCMVolumeTransformer):
         filename = data['url'] if stream else ytdl.prepare_filename(data)
         return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
 
+async def espeak_run(*args, **kwargs):
+    cmd = "espeak"
+    for key, value in kwargs.items():
+        prefix = "-"
+        if len(key) > 1:
+            prefix = "--"
+        args.extend([prefix + key, value])
+
+    process = await asyncio.create_subprocess_exec(cmd, *args)
+    return_value = await process.wait()
+
+    return return_value
+
 class vchat(commands.Cog):
     def __init__(self, client):
         self.client = client
@@ -70,6 +86,30 @@ class vchat(commands.Cog):
                         print("Nothing was in queue when " + player.title + " was queued")
                         self.play_next(message)
                     return
+
+
+    @commands.command()
+    @commands.is_owner()
+    async def vtts(self, ctx, *, txt):
+        if ctx.author.voice and ctx.author.voice.channel:
+            await self.join_channel(ctx.guild.voice_client, ctx.author.voice.channel)
+
+        if ctx.guild.voice_client is None:
+            await ctx.send("Not in vchat!")
+            return
+
+        filename = "data/vtts.wav"
+        await espeak_run(txt, "-w", filename)
+
+        player = discord.FFmpegPCMAudio(filename, options = ffmpeg_options['options'])
+        player.title = "txt"
+
+        self.queue[ctx.guild.id].append(player)
+        if not ctx.guild.voice_client.is_playing() and not ctx.guild.voice_client.is_paused():
+            self.play_next(ctx)
+
+        #old_source = ctx.guild.voice_client.source
+        #resume = lambda err: ctx.guild.voice_client.source = old_source
 
 
     @commands.Cog.listener()
