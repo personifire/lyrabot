@@ -66,7 +66,7 @@ async def espeak_run(*args, **kwargs):
 class vchat(commands.Cog):
     def __init__(self, client):
         self.client = client
-        self.playing = ""
+        self.playing = {}
         self.queue = {}
 
     @commands.Cog.listener()
@@ -195,11 +195,11 @@ class vchat(commands.Cog):
         if ctx.guild.id in self.queue:
             if len(self.queue[ctx.guild.id]) > 0:
                 player = self.queue[ctx.guild.id].pop(0)
-                self.playing = player.title
+                self.playing[ctx.guild.id] = player.title
                 ctx.guild.voice_client.play(player, after=lambda e: self.play_next(ctx, e))
                 print("play_next playing next song: " + player.title)
             else:
-                self.playing = ""
+                if ctx.guild.id in self.playing: del self.playing[ctx.guild.id]
 
 
     @commands.command(aliases = ["play"])
@@ -279,8 +279,8 @@ class vchat(commands.Cog):
         """ Displays the audio currently in the queue """
         output = ""
 
-        if self.playing:
-            output += "Currently playing: " + self.playing
+        if ctx.guild.id in self.playing:
+            output += "Currently playing: " + self.playing[ctx.guild.id] + "\n"
 
         if ctx.guild.id in self.queue:
             for index, queued in enumerate(self.queue[ctx.guild.id]):
@@ -288,6 +288,7 @@ class vchat(commands.Cog):
         else:
             await ctx.channel.send("Am I even in vchat?")
             return
+
         if output != "":
             await ctx.channel.send(output)
         else:
