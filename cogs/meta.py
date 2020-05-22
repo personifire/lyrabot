@@ -131,8 +131,12 @@ class meta(commands.Cog):
 
 
 def pull_from_git():
-    output = subprocess.check_output(["git", "pull"]) # don't bother catching exceptions
-    print(output)
+    try:
+        output = subprocess.check_output(["git", "pull"])
+        print(output)
+        return False
+    except Exception as e:
+        return True
 
 
 def try_load(client, extension):

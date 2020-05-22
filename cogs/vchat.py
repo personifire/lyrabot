@@ -294,6 +294,17 @@ class vchat(commands.Cog):
             await ctx.channel.send("No songs in queue")
 
 
+    @commands.command()
+    @commands.bot_has_guild_permissions(move_members = True)
+    async def yeet(self, ctx, mention:discord.Member = None):
+        if mention is not None and ctx.author.guild_permissions.move_members:
+            victim = mention
+        else:
+            victim = ctx.author
+        if victim.voice and victim.voice.channel:
+            await victim.move_to(None, reason="YEET")
+
+
 
 def setup(client):
     client.add_cog(vchat(client))
