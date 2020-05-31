@@ -36,7 +36,7 @@ META_NAME  = 'meta'
 
 EXTENSIONDIR = 'cogs'
 EXTENSIONS = ['react', 'fun', 'search', 'vchat', 'uno', 'roll', META_NAME, 'admin']
-EXTENSIONS = [EXTENSIONDIR + '.' + ext for ext in EXTENSIONS]
+EXTENSIONLOCS = [EXTENSIONDIR + '.' + ext for ext in EXTENSIONS]
 
 META_EXTENSION = EXTENSIONDIR + '.' + META_NAME
 
@@ -118,15 +118,25 @@ class meta(commands.Cog):
 
     @commands.command()
     @commands.is_owner()
-    async def reload(self, ctx, *args):
-        """ Reloads all current extensions """
+    async def reload(self, ctx, extension = None):
+        """ Reloads the named extension. Defaults to reloading all """
+        to_reload = META_EXTENSION
+        if extension:
+            if extension in EXTENSIONS:
+                to_reload = EXTENSIONDIR + "." + extension
+            else:
+                await ctx.channel.send("I don't think I have that one...")
+                return
+
         await ctx.channel.send("Alright, reloading!")
         try:
-            pull_from_git()
-            self.client.reload_extension(META_EXTENSION)
+            pull_success = pull_from_git()
         except Exception as e:
-            await ctx.channel.send("... Er, I had some trouble on that reload. Sorry!")
+            print("----------- git pull failed -----------")
+            await ctx.channel.send("... Er, I had some trouble updating. Sorry!")
             raise e
+
+        self.client.reload_extension(to_reload)
 
 
 
@@ -149,7 +159,7 @@ def try_load(client, extension):
 
 
 def load_extensions(client):
-    for extension in EXTENSIONS:
+    for extension in EXTENSIONLOCS:
         if extension == META_EXTENSION:
             continue
         try:
