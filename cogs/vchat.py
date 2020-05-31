@@ -114,7 +114,7 @@ class vchat(commands.Cog):
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
         vchannel = before.channel
-        if vchannel and vchannel.guild.id in self.queue:
+        if vchannel:
             vc = vchannel.guild.voice_client
             if vc and len(vc.channel.members) == 1:
                 await self.leave_channel(vchannel.guild)
@@ -145,8 +145,9 @@ class vchat(commands.Cog):
 
 
     async def leave_channel(self, guild):
-        if guild.voice_client is not None and guild.id in self.queue:
-            del self.queue[guild.id]
+        if guild.voice_client is not None:
+            if guild.id in self.queue:
+                del self.queue[guild.id]
             await guild.voice_client.disconnect()
             print("disconnected from vc")
             if len(self.queue) == 0:
