@@ -67,6 +67,13 @@ class search(commands.Cog):
 
     @commands.command()
     @commands.cooldown(1, 5, commands.BucketType.user)
+    async def rollzigger(self, ctx):
+        """ Posts a random zigzog """
+        self.search(ctx, args = "Zecora")
+
+
+    @commands.command()
+    @commands.cooldown(1, 5, commands.BucketType.user)
     async def search(self, ctx, *, args = "*"):
         """ Searches derpibooru for a given set of tags """
         tags = []
