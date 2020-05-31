@@ -65,11 +65,11 @@ class search(commands.Cog):
         return False
 
 
-    @commands.command()
+    @commands.command(aliases=["rollzig"])
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def rollzigger(self, ctx):
         """ Posts a random zigzog """
-        self.search(ctx, args = "Zecora")
+        await self.search(ctx, args = "Zecora")
 
 
     @commands.command()
@@ -114,7 +114,7 @@ class search(commands.Cog):
             if results is not None:
                 posted = False                         # ugly workaround because results doesn't say if there's anything inside unless you look
                 for post in results:
-                    await ctx.channel.send(post.url)
+                    await ctx.channel.send(f"<{post.url}>\n{post.full}")
                     posted = True
                 if posted:
                     break
