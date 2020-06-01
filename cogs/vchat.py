@@ -1,5 +1,6 @@
 import asyncio
-import subprocess
+import importlib
+import sys
 
 import discord
 from discord.ext import commands
@@ -89,6 +90,23 @@ class vchat(commands.Cog):
 
 
     @commands.command()
+    @commands.is_owner()
+    async def try_fix_youtubedl(self, ctx):
+        """ Do a bunch of things in hopes that it fixes youtubedl """
+        global ytdl, ytdl_format_options # yes it's ugly fuck you
+        ytdl.cache.remove()
+
+        args = ["-m", "pip", "install", "--upgrade", "youtube-dl"]
+        process = await asyncio.create_subprocess_exec(sys.executable, *args)
+        await process.wait()
+
+        importlib.reload(youtube_dl)
+
+        # old objects are not updated automatically by importlib.reload
+        ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
+
+
+    @commands.command()
     async def vtts(self, ctx, *, txt):
         if ctx.author.voice and ctx.author.voice.channel:
             await self.join_channel(ctx.guild.voice_client, ctx.author.voice.channel)
@@ -107,9 +125,6 @@ class vchat(commands.Cog):
         if not ctx.guild.voice_client.is_playing() and not ctx.guild.voice_client.is_paused():
             self.play_next(ctx)
 
-        #old_source = ctx.guild.voice_client.source
-        #resume = lambda err: ctx.guild.voice_client.source = old_source
-
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
@@ -123,7 +138,8 @@ class vchat(commands.Cog):
     def cog_unload(self):
         for guildid in self.queue.keys():
             guild = discord.utils.get(self.client.guilds, id = guildid)
-            self.client.loop.create_task(guild.voice_client.disconnect())
+            if guild.voice_client:
+                self.client.loop.create_task(guild.voice_client.disconnect())
         self.queue = {}
 
 
