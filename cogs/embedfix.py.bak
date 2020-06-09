@@ -11,6 +11,9 @@ class embedfix(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
+        if message.author.bot:
+            return
+
         for embed in message.embeds:
             if embed.thumbnail == discord.Embed.Empty:
                 continue
@@ -40,7 +43,7 @@ class embedfix(commands.Cog):
             image_url = f"https://derpibooru.org/api/v1/json/images/{image_id}"
             data = requests.get(image_url).json()["image"]
             print(data)
-            while "duplicate_of" in data and data["duplicate_of"]:
+            while "duplicate_of" in data and data["duplicate_of"] is not None:
                 data = requests.get(f"https://derpibooru.org/api/v1/json/images/{data['duplicate_of']}")["image"]
                 print(data)
             return data["representations"]["full"]
