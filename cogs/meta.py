@@ -28,17 +28,12 @@ from discord.ext import commands
 import asyncio
 from contextlib import redirect_stdout
 import io
+import os
 import subprocess
 import textwrap
 import traceback
 
-META_NAME  = 'meta'
-
-EXTENSIONDIR = 'cogs'
-EXTENSIONS = ['react', 'fun', 'search', 'vchat', 'uno', 'roll', META_NAME, 'admin']
-EXTENSIONLOCS = [EXTENSIONDIR + '.' + ext for ext in EXTENSIONS]
-
-META_EXTENSION = EXTENSIONDIR + '.' + META_NAME
+EXTDIR = 'cogs'
 
 class meta(commands.Cog):
     def __init__(self, client):
@@ -120,24 +115,45 @@ class meta(commands.Cog):
     @commands.is_owner()
     async def reload(self, ctx, extension = None):
         """ Reloads the named extension. Defaults to reloading all """
-        to_reload = META_EXTENSION
+        extensions = [os.path.splitext(cog) for cog in os.listdir(EXTDIR) if os.path.isfile(f"{EXTDIR}/{cog}")]
+        extensions = [cog for cog, ext in extensions if ext == ".py"]
+        to_reload = extensions
         if extension:
-            if extension in EXTENSIONS:
-                to_reload = EXTENSIONDIR + "." + extension
+            if extension in extensions:
+                to_reload = [extension]
             else:
                 await ctx.channel.send("I don't think I have that one...")
                 return
 
+        to_reload = [f"{EXTDIR}.{cog}" for cog in to_reload]
         await ctx.channel.send("Alright, reloading!")
         try:
-            pull_success = pull_from_git()
+            pull_status = pull_from_git()
+            if pull_status:
+                await ctx.send("Something weird happened on the update. Gonna keep going...")
+                print("----------- git pull failed -----------")
+                print(e)
         except Exception as e:
+            # why yes I do enjoy writing everything twice, why do you ask?
             print("----------- git pull failed -----------")
-            await ctx.channel.send("... Er, I had some trouble updating. Sorry!")
+            await ctx.send("... Er, I had some trouble updating. Sorry!")
             raise e
 
-        self.client.reload_extension(to_reload)
+        for extension in to_reload:
+            try:
+                try_load(self.client, extension)
+            except Exception as e:
+                print(f'{extension} could not be loaded. [{e}]')
+                raise e
 
+
+def try_load(client, extension):
+    try:
+        client.load_extension(extension)
+        print(f'Loaded {extension}')
+    except commands.ExtensionAlreadyLoaded:
+        client.reload_extension(extension)
+        print(f'Reloaded {extension}')
 
 
 def pull_from_git():
@@ -149,27 +165,5 @@ def pull_from_git():
         return True
 
 
-def try_load(client, extension):
-    try:
-        client.load_extension(extension)
-        print('Loaded {}'.format(extension))
-    except commands.ExtensionAlreadyLoaded:
-        client.reload_extension(extension)
-        print('Reloaded {}'.format(extension))
-
-
-def load_extensions(client):
-    for extension in EXTENSIONLOCS:
-        if extension == META_EXTENSION:
-            continue
-        try:
-            try_load(client, extension)
-        except Exception as error:
-            print('{} cannot be loaded. [{}]'.format(extension, error))
-            raise error
-
-
 def setup(client):
     client.add_cog(meta(client))
-    print('Loaded {}'.format(META_EXTENSION))
-    load_extensions(client)

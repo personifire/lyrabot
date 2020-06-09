@@ -1,6 +1,6 @@
 import asyncio
 import sys
-import os.path
+import os
 
 import discord
 from discord.ext import commands
@@ -8,7 +8,7 @@ from discord.ext import commands
 STAR = 410660094083334155
 PERS = 347100862125965312
 
-METAEXTENSION = "cogs.meta"
+EXTDIR = "cogs"
 
 owners = [PERS]
 owners = set(owners)
@@ -127,11 +127,15 @@ def get_token():
     return token
 
 def load_meta():
-    try:
-        client.load_extension(METAEXTENSION)
-    except Exception as e:
-        print('meta extension could not be loaded. [{}]'.format(extension, e))
-        raise e
+    extensions = [os.path.splitext(cog) for cog in os.listdir(EXTDIR) if os.path.isfile(f"{EXTDIR}/{cog}")]
+    extensions = [f"{EXTDIR}.{cog}" for cog, ext in extensions if ext == ".py"]
+    for extension in extensions:
+        try:
+            client.load_extension(extension)
+            print(f'Loaded {extension}')
+        except Exception as e:
+            print(f'{extension} could not be loaded. [{e}]')
+            raise e
 
 def main():
     token = get_token()
