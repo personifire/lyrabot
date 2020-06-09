@@ -93,6 +93,7 @@ class vchat(commands.Cog):
     @commands.is_owner()
     async def try_fix_youtubedl(self, ctx):
         """ Do a bunch of things in hopes that it fixes youtubedl """
+        await ctx.send("Alright, here's hoping it works...")
         global ytdl, ytdl_format_options # yes it's ugly fuck you
         ytdl.cache.remove()
 
@@ -104,6 +105,7 @@ class vchat(commands.Cog):
 
         # old objects are not updated automatically by importlib.reload
         ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
+        await ctx.send("Well, try it out!")
 
 
     @commands.command()
