@@ -3,10 +3,26 @@ from discord.ext import commands
 import derpibooru
 from derpibooru import Search, sort
 
+import requests
+
 class search(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.searcher = Search(filter_id = 56027) # "everything" filter
+
+
+    def get_derpi_embed(self, image, oembed):
+        url = f'https://derpibooru.org/images/{image.id}'
+        title = oembed["title"]
+        if len(title) > 70:
+            title = f'{title[:67]}...'
+        embed = discord.Embed(
+                title = title,
+                url = url,
+                color = 6393795
+        ).set_author(name = oembed["author_name"]
+        ).set_image(url = image.full)
+        return embed
 
     async def do_sfw_snark(self, ctx, tags):
         if 'grimdark' in tags and 'explicit' in tags:
@@ -114,7 +130,12 @@ class search(commands.Cog):
             if results is not None:
                 posted = False                         # ugly workaround because results doesn't say if there's anything inside unless you look
                 for post in results:
-                    await ctx.channel.send(f"<{post.url}>\n{post.full}")
+                    oembed_url = f'https://derpibooru.org/api/v1/json/oembed?url=https://derpibooru.org/{post.id}'
+                    data = requests.get(oembed_url).json()
+                    if data["author_url"] is not None:
+                        await ctx.send(post.url)
+                    else:
+                        await ctx.send(embed=self.get_derpi_embed(post, data))
                     posted = True
                 if posted:
                     break
