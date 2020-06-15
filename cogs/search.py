@@ -114,7 +114,9 @@ class search(commands.Cog):
             return
 
         extratags = []
-        if not ctx.channel.is_nsfw():
+        if (not ctx.channel.type == discord.ChannelType.private 
+            and not ctx.channel.type == discord.ChannelType.group
+            and not ctx.channel.is_nsfw()):
             if await self.do_sfw_snark(ctx, tags):
                 return
             extratags = ["-explicit", "-questionable", "-suggestive", "-grimdark", "-anthro"]
