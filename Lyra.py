@@ -13,7 +13,7 @@ EXTDIR = "cogs"
 owners = [PERS]
 owners = set(owners)
 
-client = commands.Bot(command_prefix = '!', owner_ids = owners)
+client = commands.Bot(command_prefix = '!', case_insensitive = True, owner_ids = owners)
 
 status = True
 

@@ -56,7 +56,7 @@ class Uno(commands.Cog):
         if self.lock.locked():
             self.lock.release()
 
-    @commands.group(invoke_without_command=False)
+    @commands.group(case_insensitive = True)
     async def uno(self, ctx):
         """ Prints help for uno """
         if ctx.invoked_subcommand is None:
