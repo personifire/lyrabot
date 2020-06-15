@@ -3,6 +3,7 @@ from discord.ext import commands
 import derpibooru
 from derpibooru import Search, sort
 
+import re
 import requests
 
 class search(commands.Cog):
@@ -11,8 +12,8 @@ class search(commands.Cog):
         self.searcher = Search(filter_id = 56027) # "everything" filter
 
 
-    def get_derpi_embed(self, image, oembed):
-        url = f'https://derpibooru.org/images/{image.id}'
+    def get_derpi_embed(self, image_id, image_url, oembed):
+        url = f'https://derpibooru.org/images/{image_id}'
         title = oembed["title"]
         if len(title) > 70:
             title = f'{title[:67]}...'
@@ -21,7 +22,7 @@ class search(commands.Cog):
                 url = url,
                 color = 6393795
         ).set_author(name = oembed["author_name"]
-        ).set_image(url = image.full)
+        ).set_image(url = image_url)
         return embed
 
     async def do_sfw_snark(self, ctx, tags):
@@ -81,6 +82,35 @@ class search(commands.Cog):
         return False
 
 
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        if message.author.bot:
+            return
+
+        regex = re.compile("derpicdn.net")
+        for embed in message.embeds:
+            thumb = embed.thumbnail
+            if thumb == discord.Embed.Empty:
+                thumb = embed.image
+                if thumb == discord.Embed.Empty:
+                    continue
+
+            if regex.search(thumb.url):
+                oembed_url = f'https://derpibooru.org/api/v1/json/oembed?url={thumb.url}'
+                data = requests.get(oembed_url).json()
+                if data["author_url"] is not None:
+                    return
+
+                image_id = data["derpibooru_id"]
+                idata = requests.get(f'https://derpibooru.org/api/v1/json/images/{image_id}').json()
+                while "duplicate_of" in idata:
+                    image_id = idata["image"]["duplicate_of"]
+                    idata = requests.get(f'https://derpibooru.org/api/v1/json/images/{image_id}').json()
+
+                image_url = idata["image"]["representations"]["full"]
+                await message.channel.send(embed = self.get_derpi_embed(image_id, image_url, data))
+
+
     @commands.command(aliases=["rollzig"])
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def rollzigger(self, ctx):
@@ -137,7 +167,7 @@ class search(commands.Cog):
                     if data["author_url"] is not None:
                         await ctx.send(post.url)
                     else:
-                        await ctx.send(embed=self.get_derpi_embed(post, data))
+                        await ctx.send(embed=self.get_derpi_embed(post.id, post.full, data))
                     posted = True
                 if posted:
                     break
