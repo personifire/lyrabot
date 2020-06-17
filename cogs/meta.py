@@ -127,26 +127,21 @@ class meta(commands.Cog):
 
         to_reload = [f"{EXTDIR}.{cog}" for cog in to_reload]
         await ctx.channel.send("Alright, reloading!")
-        try:
-            pull_status = pull_from_git()
-            if pull_status:
-                await ctx.send("Something weird happened on the update. Gonna keep going...")
-                print("----------- git pull failed -----------")
-                print(e)
-        except Exception as e:
-            # why yes I do enjoy writing everything twice, why do you ask?
-            print("----------- git pull failed -----------")
-            await ctx.send("... Er, I had some trouble updating. Sorry!")
-            raise e
 
+        pull_status = pull_from_git()
+        if pull_status:
+            await ctx.send("Something weird happened on the update. Error was: ```{traceback.format_exc()}``` -- Gonna keep going!")
+
+        reload_confirm = ""
+        reload_deny    = "\n\n"
         for extension in to_reload:
             try:
                 try_load(self.client, extension)
-                await ctx.send(f'{extension} reloaded!')
+                reload_confirm += f"{extension} reloaded!\n"
             except Exception as e:
-                print(f'{extension} could not be loaded. [{e}]')
-                raise e
-
+                reload_deny    += f"{extension} could not be loaded!\n"
+                print(f'{extension} could not be loaded. [{traceback.format_exc()}]')
+        await ctx.send(reload_confirm + reload_deny)
         await ctx.send("All done!")
 
 
@@ -165,7 +160,7 @@ def pull_from_git():
         print(output)
         return False
     except Exception as e:
-        return True
+        return e
 
 
 def setup(client):
