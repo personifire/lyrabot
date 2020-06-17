@@ -109,7 +109,8 @@ class search(commands.Cog):
                 if data["author_url"] is not None:
                     continue
 
-                derpi_url = f'https://derpibooru.org/images/{data["derpibooru_id"]}'
+                image_id  = data["derpibooru_id"]
+                derpi_url = f'https://derpibooru.org/images/{image_id}'
                 await message.channel.send(f"<{derpi_url}>", embed = self.get_derpi_embed(image_id, thumb.url, data))
 
 
