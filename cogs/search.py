@@ -3,6 +3,7 @@ from discord.ext import commands
 import derpibooru
 from derpibooru import Search, sort
 
+import asyncio
 import re
 import requests
 
@@ -87,6 +88,8 @@ class search(commands.Cog):
         if message.author.bot:
             return
 
+        await asyncio.sleep(1) # let embeds show up
+
         regex = re.compile("derpicdn.net")
         for embed in message.embeds:
             thumb = embed.thumbnail
@@ -95,20 +98,19 @@ class search(commands.Cog):
                 if thumb == discord.Embed.Empty:
                     continue
 
+            # direct links to derpicdn render fine and do not have titles
+            if embed.title != discord.Embed.Empty:
+                continue
+
             if regex.search(thumb.url):
                 oembed_url = f'https://derpibooru.org/api/v1/json/oembed?url={thumb.url}'
                 data = requests.get(oembed_url).json()
+                # derpi embeds are only screwy if source author_url is None
                 if data["author_url"] is not None:
-                    return
+                    continue
 
-                image_id = data["derpibooru_id"]
-                idata = requests.get(f'https://derpibooru.org/api/v1/json/images/{image_id}').json()
-                while "duplicate_of" in idata:
-                    image_id = idata["image"]["duplicate_of"]
-                    idata = requests.get(f'https://derpibooru.org/api/v1/json/images/{image_id}').json()
-
-                image_url = idata["image"]["representations"]["full"]
-                await message.channel.send(embed = self.get_derpi_embed(image_id, image_url, data))
+                derpi_url = f'https://derpibooru.org/images/{data["derpibooru_id"]}'
+                await message.channel.send(f"<{derpi_url}>", embed = self.get_derpi_embed(image_id, thumb.url, data))
 
 
     @commands.command(aliases=["rollzig"])
