@@ -92,6 +92,7 @@ class search(commands.Cog):
 
         regex = re.compile("derpicdn.net")
         for embed in message.embeds:
+            print("## embed found -- checking if image present and from derpi")
             thumb = embed.thumbnail
             if thumb == discord.Embed.Empty:
                 thumb = embed.image
@@ -99,16 +100,18 @@ class search(commands.Cog):
                     continue
 
             # direct links to derpicdn render fine and do not have titles
-            if embed.title != discord.Embed.Empty:
+            if embed.title == discord.Embed.Empty:
                 continue
 
             if regex.search(thumb.url):
+                print("## found derpi image embed -- checking if fixup required")
                 oembed_url = f'https://derpibooru.org/api/v1/json/oembed?url={thumb.url}'
                 data = requests.get(oembed_url).json()
                 # derpi embeds are only screwy if source author_url is None
                 if data["author_url"] is not None:
                     continue
 
+                print("## fixup required -- sending")
                 image_id  = data["derpibooru_id"]
                 derpi_url = f'https://derpibooru.org/images/{image_id}'
                 await message.channel.send(f"<{derpi_url}>", embed = self.get_derpi_embed(image_id, thumb.url, data))
@@ -170,7 +173,8 @@ class search(commands.Cog):
                     if data["author_url"] is not None:
                         await ctx.send(post.url)
                     else:
-                        await ctx.send(embed=self.get_derpi_embed(post.id, post.full, data))
+                        derpi_url = f'https://derpibooru.org/images/{post.id}'
+                        await ctx.send(f'<{derpi_url}>', embed=self.get_derpi_embed(post.id, post.full, data))
                     posted = True
                 if posted:
                     break
