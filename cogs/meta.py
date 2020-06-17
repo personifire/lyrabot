@@ -142,9 +142,12 @@ class meta(commands.Cog):
         for extension in to_reload:
             try:
                 try_load(self.client, extension)
+                await ctx.send(f'{extension} reloaded!')
             except Exception as e:
                 print(f'{extension} could not be loaded. [{e}]')
                 raise e
+
+        await ctx.send("All done!")
 
 
 def try_load(client, extension):
