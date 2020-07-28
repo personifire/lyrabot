@@ -132,14 +132,14 @@ def try_verb(token):
             return verb
 
 
-class YoureMom(commands.Cog):
+class youre_mom(commands.Cog):
     def __init__(self):
         # Disable named entity recognition for performance
         self.nlp = spacy.load("en_core_web_sm", disable=["ner"])
         setup_nlp_markup(self.nlp)
 
-    @commands.command()
-    async def ym(self, ctx, *, text):
+    @commands.command(aliases=["ym"])
+    async def youremom(self, ctx, *, text):
         """ you're mom """
         doc = self.nlp(text)
         ym_text = ""
