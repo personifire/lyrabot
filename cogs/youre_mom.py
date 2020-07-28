@@ -52,6 +52,14 @@ def ym_sentence(sent):
             if verb:
                 sub.append(verb)
             return sub
+
+    for token in tokens:
+        if token.pos_ in ["NOUN", "PROPN", "PRON"]:
+            return [(token_bounds(token), "you're mom")]
+
+    if sent.root.pos_ not in ["PUNCT", "SYM", "X"]:
+        return [(token_bounds(sent.root), "you're mom")]
+
     return []
 
 

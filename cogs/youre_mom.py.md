@@ -20,6 +20,7 @@ In this article, we write a [discord.py](https://discordpy.readthedocs.io/) cog 
     * [Possession modifier](#possession-modifier)
     * [Objects](#objects)
     * [Subjects](#subjects)
+    * [Fallback](#fallback)
     * [Excluded dependencies](#excluded-dependencies)
   * [Helpers](#helpers)
   * [Verbs](#verbs)
@@ -343,11 +344,22 @@ Finally, we use `.left_edge` to catch cases of "whose [noun]":
             return sub
 ```
 
-#### Excluded dependencies
+#### Fallback
 
 ```python
+    for token in tokens:
+        if token.pos_ in ["NOUN", "PROPN", "PRON"]:
+            return [(token_bounds(token), "you're mom")]
+
+    if sent.root.pos_ not in ["PUNCT", "SYM", "X"]:
+        return [(token_bounds(sent.root), "you're mom")]
+
     return []
 ```
+
+If we can't find any other replacement, we try replacing a random noun. We use `token_bounds` to keep the replacement small—this seems to keep things interesting. Failing that, we replace the root if it isn't punctuation or gibberish. This works surprisingly well for sentence fragments.
+
+#### Excluded dependencies
 
 <details>
 <summary>Why are the rest of the dependencies excluded?</summary>
