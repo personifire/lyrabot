@@ -113,6 +113,28 @@ class meta(commands.Cog):
 
     @commands.command()
     @commands.is_owner()
+    async def load(self, ctx, extension = None):
+        """ Loads the named extension. """
+        if extension is None:
+            ctx.send("You didn't name a cog to load, you doof")
+        
+        extension = f"{EXTDIR}.{extension}"
+
+        # duplicate code from reload, because I can't be bothered to think about it
+        pull_status = pull_from_git()
+        if pull_status:
+            await ctx.send(f"Something weird happened on the update. Error was: ```{traceback.format_exc()}``` -- Gonna keep going!")
+
+        try:
+            try_load(self.client, extension)
+            await ctx.send(f"{extension} loaded!")
+        except Exception as e:
+            print(f'{extension} could not be loaded. [{traceback.format_exc()}]')
+            await ctx.send("Load broke!")
+
+
+    @commands.command()
+    @commands.is_owner()
     async def reload(self, ctx, extension = None):
         """ Reloads the named extension. Defaults to reloading all """
         extensions = [os.path.splitext(cog) for cog in os.listdir(EXTDIR) if os.path.isfile(f"{EXTDIR}/{cog}")]
@@ -130,7 +152,7 @@ class meta(commands.Cog):
 
         pull_status = pull_from_git()
         if pull_status:
-            await ctx.send("Something weird happened on the update. Error was: ```{traceback.format_exc()}``` -- Gonna keep going!")
+            await ctx.send(f"Something weird happened on the update. Error was: ```{traceback.format_exc()}``` -- Gonna keep going!")
 
         reload_confirm = ""
         reload_deny    = "\n\n"
