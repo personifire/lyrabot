@@ -30,20 +30,22 @@ class video(commands.Cog):
 
         duration2 = 10
 
-        # trim duration 
-        args  = f' -t {duration1} -i {video} -t {duration2} -i files/stickbug.mp4 -filter_complex "'
-        # scale to minimum that fits 1280x720 (resolution of the stickbug video) (implicitly send output to next stage)
-        args += ' [0:v] scale=iw*min(1280/iw\,720/ih):ih*min(1280/iw\,720/ih), '
-        # pad to fit (name video output stream "padvid") (comma means same "linear chain", semicolon would mean not same)
-        args += ' pad=w=1280:h=720 [padvid], '
+        # automatically say yes to overwrite, trim duration of inputs
+        args  = f'-y -t {duration1} -i {video} -t {duration2} -i files/stickbug.mp4 -filter_complex'.split(" ")
+        # scale to minimum that fits 1280x720 (resolution of the stickbug video)
+        filters  = '[0:v] scale=iw*min(1280/iw\,720/ih):ih*min(1280/iw\,720/ih), '
+        # pad to fit
+        filters += 'pad=w=1280:h=720:x=(ow-iw)/2:y=(oh-ih)/2 [padvid], '
         # cat the videos
-        args += ' [padvid] [0:a] [1:v] [1:a] concat=n=2:v=1:a=1 [v] [a]" '
+        filters += '[padvid] [0:a] [1:v] [1:a] concat=n=2:v=1:a=1 [v] [a]'
+        args += [filters]
         # only include the final video/audio streams in output
-        args += ' -map "[v]" -map "[a]" data/stickbug.mp4'
+        args += '-map [v] -map [a] data/stickbug.mp4'.split(" ")
 
+        #args = args.split(" ")
         print(f"Sending these args: {args}")
         async with ctx.typing():
-            await ffmpeg_run(args)
+            await ffmpeg_run(*args)
             await ctx.send(file=discord.File('data/stickbug.mp4'))
 
 def setup(client):
