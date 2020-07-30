@@ -2,6 +2,8 @@
 
 *(Note: This is a [literate program](https://en.wikipedia.org/wiki/Literate_programming). To turn it into a runnable program, use the [lit](https://github.com/vijithassar/lit) preprocessor.)*
 
+<!-- For the explacy diagrams, we have to use fenced code blocks with the `text` language. If we use indented code blocks, GitHub will apply Python syntax highlighting. But, lit doesn't support ignoring code blocks by language. To get around this, we indent every `text` code block by at least one space. This doesn't change how the Markdown renders, but it does ensure that lit's /^```/ regex will ignore the blocks. -->
+
 **you're mom** is a type of [maternal insult](https://en.wikipedia.org/wiki/Maternal_insult). It is used in many ways, but the most common is the *substitution*. In this form, the insult is created by repeating what someone says but with part of their sentence replaced with "you're mom":
 
 > A: "What is the purpose of **this**?"
