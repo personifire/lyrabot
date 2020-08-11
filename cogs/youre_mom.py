@@ -1,3 +1,4 @@
+import bisect
 import random
 import re
 
@@ -6,25 +7,17 @@ import spacy
 from spacy.util import compile_prefix_regex, compile_suffix_regex
 
 
-def ym_sentence(sent):
-    """Given a sentence, return a "you're mom" substitution.
+def ym_dep(tokens):
+    """Yield "you're mom" substitutions by analyzing the dependencies of tokens.
 
-    Args:
-        sent (Span): The sentence to process. Usually from `Doc.sents`.
-
-    Returns:
-        A list of replacements. Each replacement is a tuple of
-        ((start_char, end_char), replacement). If no replacements can be made,
-        an empty list is returned.
+    Each substitution is a list of replacements. Each replacement is a tuple of
+    ((start_char, end_char), string).
     """
-    # Shuffle tokens to keep things interesting
-    tokens = list(sent)
-    random.shuffle(tokens)
     for token in tokens:
         parent = token.head
         grandparent = parent.head
         if token.dep_ == "poss" and token.tag_ != "WP$":
-            return [(subtree_bounds(token), "you're mom's")]
+            yield [(subtree_bounds(token), "you're mom's")]
         elif (
             token.dep_ in ["dobj", "attr", "pobj"]
             or (token.dep_ == "pcomp" and token.lower_ != "of")
@@ -39,7 +32,7 @@ def ym_sentence(sent):
                 and parent.i < grandparent.i
             )
         ):
-            return [(subtree_bounds(token), "you're mom")]
+            yield [(subtree_bounds(token), "you're mom")]
         elif token.dep_ in ["nsubj", "nsubjpass", "csubj", "csubjpass"] and not (
             parent.dep_ in ["relcl", "csubj", "csubjpass"]
             and token.left_edge.tag_ in ["WP", "WDT", "WP$"]
@@ -51,7 +44,39 @@ def ym_sentence(sent):
             verb = try_verb(parent)
             if verb:
                 sub.append(verb)
-            return sub
+            yield sub
+
+
+def ym_sentence(sent):
+    """Return a "you're mom" substitution for the given sentence span.
+
+    A substitution is a list of replacements. Each replacement is a tuple of
+    ((start_char, end_char), string). If no replacements can be made, an empty
+    list is returned.
+    """
+    sub = []
+    sub_ranges = []
+    # Equation found through testing and regression
+    sub_target = max(1, round(len(sent) / 25 + 0.5))
+    tokens = list(sent)
+    # Shuffle tokens to keep things interesting
+    random.shuffle(tokens)
+    for dep_sub in ym_dep(tokens):
+        start = min(s[0][0] for s in dep_sub)
+        end = max(s[0][1] for s in dep_sub)
+        i = bisect.bisect_left(sub_ranges, (start, end))
+        if (i == 0 or sub_ranges[i - 1][1] <= start) and (
+            i == len(sub_ranges) or end <= sub_ranges[i][0]
+        ):
+            sub.extend(dep_sub)
+            sub_ranges.insert(i, (start, end))
+
+            sub_target -= 1
+            if sub_target == 0:
+                break
+
+    if len(sub) > 0:
+        return sub
 
     for token in tokens:
         if token.pos_ in ["NOUN", "PROPN", "PRON"]:

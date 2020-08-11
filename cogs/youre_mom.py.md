@@ -18,12 +18,12 @@ In this article, we write a [discord.py](https://discordpy.readthedocs.io/) cog 
 * [Theory](#theory)
 * [Implementation](#implementation)
   * [Imports](#imports)
-  * [`ym_sentence`](#ym_sentence)
+  * [`ym_dep`](#ym_dep)
     * [Possession modifier](#possession-modifier)
     * [Objects](#objects)
     * [Subjects](#subjects)
-    * [Fallback](#fallback)
     * [Excluded dependencies](#excluded-dependencies)
+  * [`ym_sentence`](#ym_sentence)
   * [Helpers](#helpers)
   * [Verbs](#verbs)
   * [discord.py cog](#discordpy-cog)
@@ -67,7 +67,7 @@ To perform natural language processing, we use [spaCy](https://spacy.io/) and th
 
 The program itself has two main parts:
 
-1. `ym_sentence`: Analyze a sentence and return a "you're mom" substitution.
+1. `ym_sentence`, `ym_dep`: Analyze a sentence and return a "you're mom" substitution.
 2. discord.py cog: Take a chat message, pass each sentence to `ym_sentence`, and return the output.
 
 Disclaimer: English is complicated and the model isn't perfect. We try to keep things simple and cover the common cases. Anything more is too much, especially for a literate program.
@@ -75,6 +75,7 @@ Disclaimer: English is complicated and the model isn't perfect. We try to keep t
 ### Imports
 
 ```python
+import bisect
 import random
 import re
 
@@ -83,23 +84,15 @@ import spacy
 from spacy.util import compile_prefix_regex, compile_suffix_regex
 ```
 
-### `ym_sentence`
+### `ym_dep`
 
 ```python
-def ym_sentence(sent):
-    """Given a sentence, return a "you're mom" substitution.
+def ym_dep(tokens):
+    """Yield "you're mom" substitutions by analyzing the dependencies of tokens.
 
-    Args:
-        sent (Span): The sentence to process. Usually from `Doc.sents`.
-
-    Returns:
-        A list of replacements. Each replacement is a tuple of
-        ((start_char, end_char), replacement). If no replacements can be made,
-        an empty list is returned.
+    Each substitution is a list of replacements. Each replacement is a tuple of
+    ((start_char, end_char), string).
     """
-    # Shuffle tokens to keep things interesting
-    tokens = list(sent)
-    random.shuffle(tokens)
     for token in tokens:
         parent = token.head
         grandparent = parent.head
@@ -109,7 +102,7 @@ def ym_sentence(sent):
 
 ```python
         if token.dep_ == "poss" and token.tag_ != "WP$":
-            return [(subtree_bounds(token), "you're mom's")]
+            yield [(subtree_bounds(token), "you're mom's")]
 ```
 
 <details>
@@ -270,7 +263,7 @@ Substituting the `pobj` here would produce "Find the person to **you're mom** I 
 </details>
 
 ```python
-            return [(subtree_bounds(token), "you're mom")]
+            yield [(subtree_bounds(token), "you're mom")]
 ```
 
 #### Subjects
@@ -343,23 +336,8 @@ Finally, we use `.left_edge` to catch cases of "whose [noun]":
             verb = try_verb(parent)
             if verb:
                 sub.append(verb)
-            return sub
+            yield sub
 ```
-
-#### Fallback
-
-```python
-    for token in tokens:
-        if token.pos_ in ["NOUN", "PROPN", "PRON"]:
-            return [(token_bounds(token), "you're mom")]
-
-    if sent.root.pos_ not in ["PUNCT", "SYM", "X"]:
-        return [(token_bounds(sent.root), "you're mom")]
-
-    return []
-```
-
-If we can't find any other replacement, we try replacing a random noun. We use `token_bounds` to keep the replacement small—this seems to keep things interesting. Failing that, we replace the root if it isn't punctuation or gibberish. This works surprisingly well for sentence fragments.
 
 #### Excluded dependencies
 
@@ -411,6 +389,70 @@ They just aren't noun-like enough to work without requiring lots of special case
 
 ---
 </details>
+
+### `ym_sentence`
+
+```python
+def ym_sentence(sent):
+    """Return a "you're mom" substitution for the given sentence span.
+
+    A substitution is a list of replacements. Each replacement is a tuple of
+    ((start_char, end_char), string). If no replacements can be made, an empty
+    list is returned.
+    """
+    sub = []
+    sub_ranges = []
+    # Equation found through testing and regression
+    sub_target = max(1, round(len(sent) / 25 + 0.5))
+    tokens = list(sent)
+    # Shuffle tokens to keep things interesting
+    random.shuffle(tokens)
+    for dep_sub in ym_dep(tokens):
+        start = min(s[0][0] for s in dep_sub)
+        end = max(s[0][1] for s in dep_sub)
+        i = bisect.bisect_left(sub_ranges, (start, end))
+        if (i == 0 or sub_ranges[i - 1][1] <= start) and (
+            i == len(sub_ranges) or end <= sub_ranges[i][0]
+        ):
+            sub.extend(dep_sub)
+            sub_ranges.insert(i, (start, end))
+
+            sub_target -= 1
+            if sub_target == 0:
+                break
+```
+
+<details>
+<summary>How do we check if a subject/verb replacement overlaps with other replacements?</summary>
+
+We could individually check if the subject or verb overlap, but that would be complicated. So, we just check once using the bounds of both ranges. This might cause non-overlapping replacements to later be rejected, but in general, it seems that it doesn't. The tokens that occur between a subject and its verb are usually auxillaries or adverbs, not possession modifiers or objects.
+
+---
+</details>
+
+<details>
+<summary>Doesn't <code>.insert()</code> take O(N)?</summary>
+
+Yes, but the number of replacements per sentence is usually low, so the list is usually short. This means that a list is fast enough. We'd only need a better strategy if we were dealing with large lists. See the [Sorted Containers implementation details](http://www.grantjenks.com/docs/sortedcontainers/implementation.html) for more information.
+
+---
+</details>
+
+```python
+    if len(sub) > 0:
+        return sub
+
+    for token in tokens:
+        if token.pos_ in ["NOUN", "PROPN", "PRON"]:
+            return [(token_bounds(token), "you're mom")]
+
+    if sent.root.pos_ not in ["PUNCT", "SYM", "X"]:
+        return [(token_bounds(sent.root), "you're mom")]
+
+    return []
+```
+
+If we can't find any other replacement, we try replacing a random noun. We use `token_bounds` to keep the replacement small—this seems to keep things interesting. Failing that, we replace the root if it isn't punctuation or gibberish. This works surprisingly well for sentence fragments.
 
 ### Helpers
 
