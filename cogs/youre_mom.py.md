@@ -404,7 +404,7 @@ def ym_sentence(sent):
     sub_ranges = []
     # Equation found through testing and regression
     sub_target = max(1, round(len(sent) / 25 + 0.5))
-    tokens = list(sent)
+    tokens = list(filter(lambda t: t.text != "||", sent))
     # Shuffle tokens to keep things interesting
     random.shuffle(tokens)
     for dep_sub in ym_dep(tokens):
@@ -446,7 +446,7 @@ Yes, but the number of replacements per sentence is usually low, so the list is 
         if token.pos_ in ["NOUN", "PROPN", "PRON"]:
             return [(token_bounds(token), "you're mom")]
 
-    if sent.root.pos_ not in ["PUNCT", "SYM", "X"]:
+    if sent.root.pos_ not in ["PUNCT", "SYM", "X"] and sent.root.text != "||":
         return [(token_bounds(sent.root), "you're mom")]
 
     return []
@@ -463,10 +463,10 @@ def token_bounds(token):
 def subtree_bounds(token):
     # Try to preserve as much whitespace and punctuation as possible
     left = token.left_edge
-    while left.i < token.i and (left.is_punct or left.is_space):
+    while left.i < token.i and (left.is_punct or left.is_space or left.text == "||"):
         left = left.nbor(1)
     right = token.right_edge
-    while token.i < right.i and (right.is_punct or right.is_space):
+    while token.i < right.i and (right.is_punct or right.is_space or right.text == "||"):
         right = right.nbor(-1)
     return (left.idx, right.idx + len(right))
 ```
@@ -618,7 +618,7 @@ Here are the types of markup that Discord uses:
 
 * [Markdown](https://support.discord.com/hc/en-us/articles/210298617-Markdown-Text-101-Chat-Formatting-Bold-Italic-Underline-): Discord's flavor of Markdown includes bold, italic, underline, block quotes, strikethrough, inline code, code blocks, and spoiler tags. The default tokenization rules handle everything except strikethrough and spoiler tags.
   * For strikethrough (`~~strikethrough~~`), we add a rule to split off `~`. We use `~` instead of `~~` because tests show that `~` is consistently recognized as punctuation, whereas `~~` is often incorrectly recognized as a proper noun.
-  * For spoiler tags (`||spoiler alert||`), we add a rule to split off `||`. `|` and `||` are equally confusing to the model, but `||` produces one token instead of two. Hopefully, fewer tokens means fewer opportunities for the model to get confused.
+  * For spoiler tags (`||spoiler alert||`), we add a rule to split off `||`. `|` and `||` are equally confusing to the model, but `||` produces one token instead of two. This makes it easier for us to ignore the token in [`ym_sentence`](#ym_sentence) and [`subtree_bounds`](#helpers).
 * [Mentions and custom emoji](https://discord.com/developers/docs/reference#message-formatting): The default tokenization rules split mentions and custom emoji into several tokens. So, we use the [retokenizer](https://spacy.io/usage/linguistic-features/#retokenization) to merge them back into one token.
 * [Auto-embed suppression](https://support.discord.com/hc/en-us/articles/206342858--How-do-I-disable-auto-embed-): `<` and `>` are included in the default tokenization rules.
 * Character escaping: We could add rules to split off `\`, but the model probably isn't going to understand either way. So, again, we err on the side of producing fewer tokens.

@@ -58,7 +58,7 @@ def ym_sentence(sent):
     sub_ranges = []
     # Equation found through testing and regression
     sub_target = max(1, round(len(sent) / 25 + 0.5))
-    tokens = list(sent)
+    tokens = list(filter(lambda t: t.text != "||", sent))
     # Shuffle tokens to keep things interesting
     random.shuffle(tokens)
     for dep_sub in ym_dep(tokens):
@@ -82,7 +82,7 @@ def ym_sentence(sent):
         if token.pos_ in ["NOUN", "PROPN", "PRON"]:
             return [(token_bounds(token), "you're mom")]
 
-    if sent.root.pos_ not in ["PUNCT", "SYM", "X"]:
+    if sent.root.pos_ not in ["PUNCT", "SYM", "X"] and sent.root.text != "||":
         return [(token_bounds(sent.root), "you're mom")]
 
     return []
@@ -95,10 +95,10 @@ def token_bounds(token):
 def subtree_bounds(token):
     # Try to preserve as much whitespace and punctuation as possible
     left = token.left_edge
-    while left.i < token.i and (left.is_punct or left.is_space):
+    while left.i < token.i and (left.is_punct or left.is_space or left.text == "||"):
         left = left.nbor(1)
     right = token.right_edge
-    while token.i < right.i and (right.is_punct or right.is_space):
+    while token.i < right.i and (right.is_punct or right.is_space or right.text == "||"):
         right = right.nbor(-1)
     return (left.idx, right.idx + len(right))
 
