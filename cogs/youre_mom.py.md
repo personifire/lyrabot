@@ -471,6 +471,8 @@ def subtree_bounds(token):
     return (left.idx, right.idx + len(right))
 ```
 
+Punctuation is nested in weird ways, so trying to preserve it breaks just as many replacements as it fixes. Still, it makes things a bit more interesting overall.
+
 ### Verbs
 
 ```python
