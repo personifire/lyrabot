@@ -186,7 +186,7 @@ class youre_mom(commands.Cog):
 
 
 def setup(client):
-    client.add_cog(YoureMom())
+    client.add_cog(youre_mom())
 
 
 MENTION_EMOJI = re.compile(r"<(#|@[!&]?|a?:[A-Za-z0-9_]{2,}:)\d+>")
