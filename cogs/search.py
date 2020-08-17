@@ -170,7 +170,7 @@ class search(commands.Cog):
                 for post in results:
                     oembed_url = f'https://derpibooru.org/api/v1/json/oembed?url=https://derpibooru.org/{post.id}'
                     data = requests.get(oembed_url).json()
-                    if False and data["author_url"] is not None:
+                    if data["author_url"] is not None:
                         await ctx.send(post.url)
                     else:
                         derpi_url = f'https://derpibooru.org/images/{post.id}'
