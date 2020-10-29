@@ -13,7 +13,10 @@ EXTDIR = "cogs"
 owners = [PERS]
 owners = set(owners)
 
-client = commands.Bot(command_prefix = '!', case_insensitive = True, owner_ids = owners)
+intents = discord.Intents.default()
+intents.members = True
+
+client = commands.Bot(command_prefix = '!', case_insensitive = True, intents = intents, owner_ids = owners)
 
 status = True
 
