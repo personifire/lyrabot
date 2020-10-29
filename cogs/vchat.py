@@ -177,7 +177,10 @@ class vchat(commands.Cog):
 
     async def join_channel(self, voice_client, channel):
         if voice_client is None:
-            vc = await channel.connect()
+            try:
+                vc = await channel.connect()
+            except:
+                return print("Exception in join_channel")
             self.queue[channel.guild.id] = []
             print("connected to vc")
             await self.client.change_presence(activity=discord.Game('ly.radio'))

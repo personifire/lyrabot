@@ -1,9 +1,15 @@
-import asyncio
+import logging
 import sys
 import os
 
 import discord
 from discord.ext import commands
+
+logger = logging.getLogger('discord')
+logger.setLevel(logging.INFO)
+handler = logging.FileHandler(filename='bot.log')
+handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+logger.addHandler(handler)
 
 STAR = 410660094083334155
 PERS = 347100862125965312
@@ -14,7 +20,7 @@ owners = [PERS]
 owners = set(owners)
 
 intents = discord.Intents.default()
-intents.members = True
+#intents.members = True
 
 client = commands.Bot(command_prefix = '!', case_insensitive = True, intents = intents, owner_ids = owners)
 
@@ -34,8 +40,6 @@ async def on_resumed():
 async def on_command_error(ctx, err):
     if isinstance(err, commands.CommandOnCooldown):
         await ctx.channel.send("You're on cooldown, " + ctx.author.display_name)
-    elif isinstance(err, commands.CommandNotFound):
-        await ctx.channel.send("I don't think that's something I can do...")
     else:
         print("--- caught " + err.__class__.__name__ + " ---\n" + str(err))
         await ctx.channel.send("Something bad happened! I can't do that, sorry.")
@@ -49,7 +53,7 @@ async def on_member_remove(member):
     if lyra is not None:
         await lyra.send(member.display_name + ' has left the server')
     else:
-        print(member.display_name + "left server: " + member.guild.name)
+        print(member.display_name + " left server: " + member.guild.name)
 
 @client.event
 async def on_member_join(member):

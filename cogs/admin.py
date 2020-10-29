@@ -32,6 +32,10 @@ class admin(commands.Cog):
             guild   = discord.utils.get(self.client.guilds, id=rawreactevent.guild_id)
             channel = guild.get_channel(rawreactevent.channel_id)
             message = await channel.fetch_message(rawreactevent.message_id)
+
+            if guild is None:
+                return
+
             if message.author == guild.me:
                 msgregexstr  = "^Use any reaction to this post to self-assign the .*(\(id: (.*)\)) role!"
                 msgregexstr += " Or remove \(or react then remove\) to self-remove the role.$"
