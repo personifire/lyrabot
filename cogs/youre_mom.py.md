@@ -583,7 +583,7 @@ The [character limit for a chat message](https://discord.com/developers/docs/res
 
 ```python
 def setup(client):
-    client.add_cog(YoureMom())
+    client.add_cog(youre_mom())
 ```
 
 ### Discord message formatting
