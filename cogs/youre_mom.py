@@ -162,14 +162,13 @@ def try_verb(token):
 
 
 class youre_mom(commands.Cog):
-    def __init__(self):
+    def __init__(self, client):
+        self.client = client
         # Disable named entity recognition for performance
         self.nlp = spacy.load("en_core_web_sm", disable=["ner"])
         setup_nlp_markup(self.nlp)
 
-    @commands.command(aliases=["ym"])
-    async def youremom(self, ctx, *, text):
-        """ you're mom """
+    def replace(self, text):
         doc = self.nlp(text)
         ym_text = ""
         i = 0
@@ -184,13 +183,29 @@ class youre_mom(commands.Cog):
         if text == ym_text:
             # If no substitutions were found, return "you're mom" instead of
             # repeating the user's message
-            await ctx.send("you're mom")
+            return "you're mom"
         else:
-            await ctx.send(ym_text[:2000])
+            return ym_text
+
+    @commands.command(aliases=["ym"])
+    async def youremom(self, ctx, *, text):
+        """ you're mom """
+        await ctx.send(self.replace(text)[:2000])
+
+
+    @commands.command(aliases=["vym"])
+    async def vymts(self, ctx, *, text):
+        """ you're mom but audible """
+        vc = self.client.get_cog('vchat')
+        if vc is None:
+            return await ctx.send("_sorry, I think I lost my voice...!_")
+        text = self.replace(text)
+        await ctx.send(text[:2000])
+        await vc.vtts(ctx, txt = text)
 
 
 def setup(client):
-    client.add_cog(youre_mom())
+    client.add_cog(youre_mom(client))
 
 
 MENTION_EMOJI = re.compile(r"<(#|@[!&]?|a?:[A-Za-z0-9_]{2,}:)\d+>")
