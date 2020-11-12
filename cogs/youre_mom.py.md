@@ -461,17 +461,23 @@ def token_bounds(token):
     return (token.idx, token.idx + len(token))
 
 def subtree_bounds(token):
-    # Try to preserve as much whitespace and punctuation as possible
+    def should_exclude(t):
+        return (t.is_punct and t.tag_ != "POS") or t.is_space or t.text == "||"
+
     left = token.left_edge
-    while left.i < token.i and (left.is_punct or left.is_space or left.text == "||"):
+    while left.i < token.i and should_exclude(left):
         left = left.nbor(1)
+
     right = token.right_edge
-    while token.i < right.i and (right.is_punct or right.is_space or right.text == "||"):
+    while token.i < right.i and should_exclude(right):
         right = right.nbor(-1)
+
     return (left.idx, right.idx + len(right))
 ```
 
 Punctuation is nested in weird ways, so trying to preserve it breaks just as many replacements as it fixes. Still, it makes things a bit more interesting overall.
+
+Also, possessive nouns ending in _-s_ can use a single apostrophe `'` as their possession modifier. This token is categorized as punctuation, which leads to `you're mom's'` if we don't replace it. So, we have a check for the `POS` tag.
 
 ### Verbs
 
