@@ -20,7 +20,7 @@ owners = [PERS]
 owners = set(owners)
 
 intents = discord.Intents.default()
-#intents.members = True
+intents.members = True
 
 client = commands.Bot(command_prefix = '!', case_insensitive = True, intents = intents, owner_ids = owners)
 
