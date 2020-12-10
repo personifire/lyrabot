@@ -32,10 +32,10 @@ class image(commands.Cog):
         async with ctx.typing():
             result = await self.client.loop.run_in_executor(None, lib.hat.enhat_image, image, img_outname)
             if result is None:
-                await ctx.send("Doesn't look like an image to me!")
+                return await ctx.send("Doesn't look like an image to me!")
             elif isinstance(result, str):
                 print(result)
-                await ctx.send('What\'s a "geef"?')
+                return await ctx.send('What\'s a "geef"?')
             elif result:
                 await ctx.send(file=discord.File(img_outname))
             else:
