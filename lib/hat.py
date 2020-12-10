@@ -187,6 +187,11 @@ def hatten(img, hat, outname):
     img_height, img_width, img_num_channels = img.shape
     hat_height, hat_width, hat_num_channels = hat.shape
 
+    # this resizing may not be a fantastic idea for processing time...
+    if hat_width < img_width:
+        hat = cv2.resize(hat, (img_width, img_width), cv2.INTER_CUBIC)
+        hat_height, hat_width, hat_num_channels = hat.shape
+
     # reorganize some numbers
     third_width = img_width // 3
     line_dict, y_idx_pts = index_lines(lines, third_width, third_width * 2)
