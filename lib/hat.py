@@ -179,18 +179,19 @@ def transform_hat(hat, hat_p1, hat_p2, img_width, img_height, hat_width, hat_hei
     return cropped_hat
 
 def hatten(img, hat, outname):
+    img_height, img_width, img_num_channels = img.shape
+    hat_height, hat_width, hat_num_channels = hat.shape
+
+    if hat_width < img_width:
+        scale_factor = hat_width / max(img_height, img_width)
+        new_dims = (int(img_width * scale_factor), int(img_height * scale_factor))
+        img = cv2.resize(img, new_dims, cv2.INTER_CUBIC)
+        img_height, img_width, img_num_channels = img.shape
+
     # do some image processing
     lines = line_detect(img)
     if lines is None:
         return f"probably gif -- img {img} from {img_name} hat {hat_name} out {out_name}"
-
-    img_height, img_width, img_num_channels = img.shape
-    hat_height, hat_width, hat_num_channels = hat.shape
-
-    # this resizing may not be a fantastic idea for processing time...
-    if hat_width < img_width:
-        hat = cv2.resize(hat, (img_width, img_width), cv2.INTER_CUBIC)
-        hat_height, hat_width, hat_num_channels = hat.shape
 
     # reorganize some numbers
     third_width = img_width // 3
@@ -259,6 +260,9 @@ def enhat_image(imgname, outname, hatname = None, img_is_url = True):
         img = cv2.imdecode(img_bytearray, cv2.IMREAD_UNCHANGED)
     else:
         img = cv2.imread(img_name, flags=cv2.IMREAD_UNCHANGED)
+
+    if img is None:
+        return None
 
     hat = cv2.imread(hatname, flags=cv2.IMREAD_UNCHANGED)
 

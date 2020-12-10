@@ -43,5 +43,9 @@ class image(commands.Cog):
 
         os.remove(img_outname)
 
+
+    def cog_unload(self):
+        importlib.reload(lib.hat)
+
 def setup(client):
     client.add_cog(image(client))
