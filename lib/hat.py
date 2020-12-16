@@ -1,9 +1,11 @@
+import io
 import math
 import os
 import random
 
 import cv2
 import numpy as np
+from PIL import Image, ImageOps
 import requests
 
 HATDIR = 'files/santahats'
@@ -256,14 +258,15 @@ def enhat_image(imgname, outname, hatname = None, img_is_url = True):
         hatname = f'{HATDIR}/{hatname}.png'
 
     if img_is_url:
-        img_bytearray = np.asarray(bytearray(requests.get(imgname).content))#, dtype='uint8'))
-        img = cv2.imdecode(img_bytearray, cv2.IMREAD_UNCHANGED)
+        img = Image.open(io.BytesIO(requests.get(imgname).content))
     else:
-        img = cv2.imread(img_name, flags=cv2.IMREAD_UNCHANGED)
+        img = Image.open(imgname)
 
     if img is None:
         return None
 
+    # OpenCV expects images to be in BGRA format
+    img = np.asarray(ImageOps.exif_transpose(img.convert("RGBA")))[:, :, [2, 1, 0, 3]]
     hat = cv2.imread(hatname, flags=cv2.IMREAD_UNCHANGED)
 
     return hatten(img, hat, outname)
