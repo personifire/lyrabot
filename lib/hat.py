@@ -1,9 +1,12 @@
+from collections import defaultdict
+import io
 import math
 import os
 import random
 
 import cv2
 import numpy as np
+from PIL import Image, ImageOps
 import requests
 
 HATDIR = 'files/santahats'
@@ -27,18 +30,11 @@ def line_detect(img):
 
     return lines
 
-
-def dict_index_insert(dictionary, index, value):
-    if index in dictionary:
-        dictionary[index].append(value)
-    else:
-        dictionary[index] = [value]
-
 def index_lines(lines, min_x, max_x):
     # organize lines: hash line_dict { pt1 => [pt2, ...], pt2 => [pt1, ...] }
-    line_dict = {}
+    line_dict = defaultdict(list)
     # index center pts: hash y_idx_pts { y1 => [x1, ...], y2 => [x2, ...] }
-    y_idx_pts = {}
+    y_idx_pts = defaultdict(list)
     for line in lines:
         line = line[0]
         p1 = (line[0], line[1])
@@ -49,12 +45,12 @@ def index_lines(lines, min_x, max_x):
 
         # only track x in the center third
         if min_x <= p1[0] and p1[0] <= max_x:
-            dict_index_insert(y_idx_pts, p1[1], p1[0])
+            y_idx_pts[p1[1]].append(p1[0])
         if min_x <= p2[0] and p2[0] <= max_x:
-            dict_index_insert(y_idx_pts, p2[1], p2[0])
+            y_idx_pts[p2[1]].append(p2[0])
 
-        dict_index_insert(line_dict, p1, p2)
-        dict_index_insert(line_dict, p2, p1)
+        line_dict[p1].append(p2)
+        line_dict[p2].append(p1)
     return line_dict, y_idx_pts
 
 def slope(p1, p2):
@@ -256,14 +252,15 @@ def enhat_image(imgname, outname, hatname = None, img_is_url = True):
         hatname = f'{HATDIR}/{hatname}.png'
 
     if img_is_url:
-        img_bytearray = np.asarray(bytearray(requests.get(imgname).content))#, dtype='uint8'))
-        img = cv2.imdecode(img_bytearray, cv2.IMREAD_UNCHANGED)
+        img = Image.open(io.BytesIO(requests.get(imgname).content))
     else:
-        img = cv2.imread(img_name, flags=cv2.IMREAD_UNCHANGED)
+        img = Image.open(imgname)
 
     if img is None:
         return None
 
+    # OpenCV expects images to be in BGRA format
+    img = np.asarray(ImageOps.exif_transpose(img.convert("RGBA")))[:, :, [2, 1, 0, 3]]
     hat = cv2.imread(hatname, flags=cv2.IMREAD_UNCHANGED)
 
     return hatten(img, hat, outname)
