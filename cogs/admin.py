@@ -30,11 +30,10 @@ class admin(commands.Cog):
     async def react_change_role(self, rawreactevent):
         try:
             guild   = discord.utils.get(self.client.guilds, id=rawreactevent.guild_id)
-            channel = guild.get_channel(rawreactevent.channel_id)
-            message = await channel.fetch_message(rawreactevent.message_id)
-
             if guild is None:
                 return
+            channel = guild.get_channel(rawreactevent.channel_id)
+            message = await channel.fetch_message(rawreactevent.message_id)
 
             if message.author == guild.me:
                 msgregexstr  = "^Use any reaction to this post to self-assign the .*(\(id: (.*)\)) role!"
