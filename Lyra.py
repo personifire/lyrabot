@@ -39,10 +39,9 @@ async def on_resumed():
 @client.event
 async def on_command_error(ctx, err):
     if isinstance(err, commands.CommandOnCooldown):
-        await ctx.channel.send("You're on cooldown, " + ctx.author.display_name)
+        await ctx.channel.send(f"You're on cooldown for another {round(err.retry_after)}s, {ctx.author.display_name}")
     else:
-        print("--- caught " + err.__class__.__name__ + " ---\n" + str(err))
-        await ctx.channel.send("Something bad happened! I can't do that, sorry.")
+        raise err # gotta log them somewhere
 
 @client.event
 async def on_member_remove(member):
