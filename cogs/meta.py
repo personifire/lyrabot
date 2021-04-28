@@ -121,9 +121,9 @@ class meta(commands.Cog):
         extension = f"{EXTDIR}.{extension}"
 
         # duplicate code from reload, because I can't be bothered to think about it
-        pull_status = pull_from_git()
-        if pull_status:
-            await ctx.send(f"Something weird happened on the update. Error was: ```{traceback.format_exc()}``` -- Gonna keep going!")
+        err = pull_from_git()
+        if err:
+            await ctx.send("Something weird happened on the update. Error was: ```{err}```\n -- Gonna keep going!"
 
         try:
             try_load(self.client, extension)
@@ -150,9 +150,9 @@ class meta(commands.Cog):
         to_reload = [f"{EXTDIR}.{cog}" for cog in to_reload]
         await ctx.channel.send("Alright, reloading!")
 
-        pull_status = pull_from_git()
-        if pull_status:
-            await ctx.send(f"Something weird happened on the update. Error was: ```{traceback.format_exc()}``` -- Gonna keep going!")
+        err = pull_from_git()
+        if err:
+            await ctx.send("Something weird happened on the update. Error was: ```{err}```\n -- Gonna keep going!"
 
         reload_confirm = ""
         reload_deny    = "\n\n"
@@ -182,7 +182,7 @@ def pull_from_git():
         print(output)
         return False
     except Exception as e:
-        return e
+        return f"{traceback.format_exc(limit=1)}"
 
 
 def setup(client):
