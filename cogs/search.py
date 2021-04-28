@@ -13,19 +13,6 @@ class search(commands.Cog):
         self.searcher = Search(filter_id = 56027) # "everything" filter
 
 
-    def get_derpi_embed(self, image_id, image_url, oembed):
-        url = f'https://derpibooru.org/images/{image_id}'
-        title = oembed["title"]
-        if len(title) > 70:
-            title = f'{title[:67]}...'
-        embed = discord.Embed(
-                title = title,
-                url = url,
-                color = 6393795
-        ).set_author(name = oembed["author_name"]
-        ).set_image(url = image_url)
-        return embed
-
     async def do_sfw_snark(self, ctx, tags):
         if 'grimdark' in tags and 'explicit' in tags:
             await ctx.channel.send("Absolutely not.")
@@ -83,40 +70,6 @@ class search(commands.Cog):
         return False
 
 
-    @commands.Cog.listener()
-    async def on_message(self, message):
-        if message.author.bot:
-            return
-
-        await asyncio.sleep(1) # let embeds show up
-
-        regex = re.compile("derpicdn.net")
-        for embed in message.embeds:
-            print("## embed found -- checking if image present and from derpi")
-            thumb = embed.thumbnail
-            if thumb == discord.Embed.Empty:
-                thumb = embed.image
-                if thumb == discord.Embed.Empty:
-                    continue
-
-            # direct links to derpicdn render fine and do not have titles
-            if embed.title == discord.Embed.Empty:
-                continue
-
-            if regex.search(thumb.url):
-                print("## found derpi image embed -- checking if fixup required")
-                oembed_url = f'https://derpibooru.org/api/v1/json/oembed?url={thumb.url}'
-                data = requests.get(oembed_url).json()
-                # derpi embeds are only screwy if source author_url is None
-                if data["author_url"] is not None:
-                    continue
-
-                print("## fixup required -- sending")
-                image_id  = data["derpibooru_id"]
-                derpi_url = f'https://derpibooru.org/images/{image_id}'
-                await message.channel.send(f"<{derpi_url}>", embed = self.get_derpi_embed(image_id, thumb.url, data))
-
-
     @commands.command(aliases=["rollzig"])
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def rollzigger(self, ctx):
@@ -129,9 +82,6 @@ class search(commands.Cog):
     async def search(self, ctx, *, args = "*"):
         """ Searches derpibooru for a given set of tags """
         tags = []
-        if "_" in args:
-            args = args.replace(" ", ",")
-            args = args.replace("_", " ")
         tags = list(filter(None, [tag.strip() for tag in args.split(",")]))
 
         # meme joke
@@ -168,19 +118,13 @@ class search(commands.Cog):
             if results is not None:
                 posted = False                         # ugly workaround because results doesn't say if there's anything inside unless you look
                 for post in results:
-                    oembed_url = f'https://derpibooru.org/api/v1/json/oembed?url=https://derpibooru.org/{post.id}'
-                    data = requests.get(oembed_url).json()
-                    if data["author_url"] is not None:
-                        await ctx.send(post.url)
-                    else:
-                        derpi_url = f'https://derpibooru.org/images/{post.id}'
-                        await ctx.send(f'<{derpi_url}>', embed=self.get_derpi_embed(post.id, post.full, data))
+                    await ctx.send(post.url)
                     posted = True
                 if posted:
                     break
 
-            # first attempt didn't work, try splitting on spaces
-            tags = " ".join(tags).split(" ")
+            # first attempt didn't work, try the dumb underscore/space thing
+            tags = ",".join(tags).replace(" ", ",").replace("_", " ").split(",")
 
         if not posted:
             await ctx.channel.send('No results for search "' + args + '". Too niche!')
