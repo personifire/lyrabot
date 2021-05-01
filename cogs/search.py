@@ -118,7 +118,8 @@ class search(commands.Cog):
 
         if url is None:
             if ctx.message.reference is not None:
-                url = self.get_url_from_message(ctx.message.reference)
+                msg = await ctx.channel.fetch_message(ctx.message.reference.message_id)
+                url = self.get_url_from_message(msg)
         if url is None:
             async for msg in ctx.channel.history(limit = 5):
                 url = self.get_url_from_message(msg)
