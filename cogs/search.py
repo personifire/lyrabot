@@ -7,9 +7,12 @@ import asyncio
 import re
 import requests
 
+import aiohttp
+
 class search(commands.Cog):
     def __init__(self, client):
         self.client = client
+        self.session = aiohttp.ClientSession()
         self.searcher = Search(filter_id = 56027) # "everything" filter
 
 
@@ -76,6 +79,68 @@ class search(commands.Cog):
         """ Posts a random zigzog """
         await self.search(ctx, args = "Zecora")
 
+
+    def get_url_from_message(self, msg):
+        # trying to reverse search more than one image is for nerds
+        if len(msg.embeds) > 0:
+            for embed in msg.embeds:
+                if embed.thumbnail != discord.Embed.Empty and embed.thumbnail.url != discord.Embed.Empty:
+                    return embed.thumbnail.url
+                if embed.image != discord.Embed.Empty and embed.image.url != discord.Embed.Empty:
+                    return embed.image.url
+        elif len(msg.attachments) > 0:
+            valid_image_content_types = [
+                    "image/jpg",     "image/jpeg",
+                    "image/png",     "image/gif",
+                    "image/svg+xml", "video/webm",
+            ]
+            for attachment in msg.attachments:
+                if attachment.content_type in valid_image_content_types:
+                    return attachment.url
+
+        return None
+
+    @commands.command()
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def reverse(self, ctx, url = None, distance = None):
+        """ Reverse searches an image on derpibooru
+
+        Can take an image URL. Will look for an image in a replied-to message, if given, or the last five messages in the channel if not.
+        Can also take a "match distance" -- defaults to 0.25, should probably be 0.2-0.5 in general.
+        """
+        # check if url is actually "match distance"
+        if distance is None:
+            try:
+                distance = float(url)
+                url = None
+            except (ValueError, TypeError): # url is actually a url, or is None
+                pass
+
+        if url is None:
+            if ctx.message.reference is not None:
+                url = self.get_url_from_message(ctx.message.reference)
+        if url is None:
+            async for msg in ctx.channel.history(limit = 5):
+                url = self.get_url_from_message(msg)
+                if url is not None:
+                    break
+
+        if url is None:
+            await ctx.reply("Couldn't find an image to reverse search!")
+
+        params = { 'url': url }
+        if distance is not None:
+            params['distance'] = distance
+        reverse_url = "https://derpibooru.org/api/v1/json/search/reverse"
+        async with self.session.post(reverse_url, params = params) as reverse:
+            if reverse.ok:
+                images = (await reverse.json())["images"]
+                if len(images) == 0:
+                    await ctx.reply("Doesn't look like derpi has it, sorry.")
+                else: # maybe one day menus will be released and you can have a reasonable interface to show multiple results
+                    await ctx.reply(f"https://derpibooru.org/{images[0]['id']}")
+            else:
+                await ctx.reply("Uhh, sorry. Try again?")
 
     @commands.command()
     @commands.cooldown(1, 5, commands.BucketType.user)

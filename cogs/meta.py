@@ -152,7 +152,7 @@ class meta(commands.Cog):
 
         err = pull_from_git()
         if err:
-            await ctx.send("Something weird happened on the update. Error was: ```{err}```\n -- Gonna keep going!"
+            await ctx.send("Something weird happened on the update. Error was: ```{err}```\n -- Gonna keep going!")
 
         reload_confirm = ""
         reload_deny    = "\n\n"

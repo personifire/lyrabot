@@ -22,7 +22,15 @@ owners = set(owners)
 intents = discord.Intents.default()
 intents.members = True
 
-client = commands.Bot(command_prefix = '!', case_insensitive = True, intents = intents, owner_ids = owners)
+allowed_mentions = discord.AllowedMentions(replied_user = False)
+
+client = commands.Bot(
+        command_prefix = '!',
+        case_insensitive = True,
+        intents = intents,
+        allowed_mentions = allowed_mentions,
+        owner_ids = owners
+)
 
 status = True
 
