@@ -15,6 +15,13 @@ class search(commands.Cog):
         self.session = aiohttp.ClientSession()
         self.searcher = Search(filter_id = 56027) # "everything" filter
 
+    def cog_unload(self):
+        session_close = asyncio.run_coroutine_threadsafe(self.session.close(), self.client.loop)
+        try:
+            session_close.result()
+        except:
+            pass
+
 
     async def do_sfw_snark(self, ctx, tags):
         if 'grimdark' in tags and 'explicit' in tags:
