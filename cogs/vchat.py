@@ -260,7 +260,7 @@ class vchat(commands.Cog):
             try:
                 player = await YTDLSource.from_url(url, loop=self.client.loop)
             except YTDLException:
-                return await ctx.send("Something bad happened while I was looking for that, sorry")
+                return await ctx.send("Something bad happened while I was looking for that, sorry!")
 
             if player:
                 await ctx.channel.send("Gotcha, queueing " + player.title + ", " + ctx.author.name)
