@@ -196,7 +196,7 @@ class fun(commands.Cog):
     async def avatar(self, ctx):
         """ Gets a link to the mentioned user's avatar """
         if len(ctx.message.mentions) == 0:
-            await ctx.channel.send("Mention a user so I know whose avatar to grab!")
+            await ctx.channel.send(ctx.author.avatar)
         async with ctx.channel.typing():
             for user in ctx.message.mentions:
                 await ctx.channel.send(user.avatar_url)

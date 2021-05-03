@@ -16,11 +16,7 @@ class search(commands.Cog):
         self.searcher = Search(filter_id = 56027) # "everything" filter
 
     def cog_unload(self):
-        session_close = asyncio.run_coroutine_threadsafe(self.session.close(), self.client.loop)
-        try:
-            session_close.result()
-        except:
-            pass
+        self.client.loop.create_task(self.session.close()) # failure and exact time don't really matter
 
 
     async def do_sfw_snark(self, ctx, tags):

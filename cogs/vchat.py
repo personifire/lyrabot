@@ -1,5 +1,7 @@
 import asyncio
 import importlib
+import json
+import subprocess
 import sys
 
 import discord
@@ -9,17 +11,16 @@ import youtube_dl
 
 ytdl_format_options = {
     'format': 'bestaudio/best',
-    'buffersize': 4096,
-    'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
-    'restrictfilenames': True,
-    'noplaylist': True,
-    'nocheckcertificate': True,
-    'ignoreerrors': False,
-    'logtostderr': False,
+    'buffer-size': 4096,
+    'output': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
+    'restrict-filenames': True,
+    'no-playlist': True,
+    'no-check-certificate': True,
+    'ignore-errors': False,
     'quiet': True,
-    'no_warnings': True,
-    'default_search': 'auto',
-    'source_address': '0.0.0.0' # bind to ipv4 since ipv6 addresses cause issues sometimes
+    'no-warnings': True,
+    'default-search': 'auto',
+    'source-address': '0.0.0.0' # bind to ipv4 since ipv6 addresses cause issues sometimes
 }
 
 ffmpeg_options = {
@@ -27,7 +28,30 @@ ffmpeg_options = {
     'options': '-vn'
 }
 
-ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
+class YTDLException(Exception):
+    pass
+
+async def ytdl_get_data(url):
+    exe  = sys.executable             # run a python subprocess
+    args = ["-m", "youtube_dl", "-J"] # to call youtube_dl and dump info as a single line of JSON
+
+    for flag, value in ytdl_format_options.items():
+        if value is False:
+            continue
+
+        args.append(f"--{flag}" if len(flag) > 1  else f"-{flag}")
+
+        # binary flags don't take an arg
+        if not isinstance(value, bool):
+            args.append(str(value))
+
+    args.append(url)
+
+    ytdl_process = await asyncio.create_subprocess_exec(exe, *args, stdout=subprocess.PIPE)
+    await ytdl_process.wait()
+    if ytdl_process.returncode != 0:
+        raise YTDLException("lol")
+    return json.loads((await ytdl_process.stdout.readline()).decode("utf-8"))
 
 class YTDLSource(discord.PCMVolumeTransformer):
     def __init__(self, source, *, data, volume=0.25):
@@ -38,26 +62,26 @@ class YTDLSource(discord.PCMVolumeTransformer):
         self.title = data.get('title')
         self.url = data.get('url')
 
+
     @classmethod
     async def from_url(cls, url, *, loop=None, stream=True):
         loop = loop or asyncio.get_event_loop()
-        data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=not stream))
+        # TODO something when the "stream" arg is false, probably
+        data = await ytdl_get_data(url)
 
         if 'entries' in data:
             # take first item from a playlist
             # TODO look at playlist support
             data = data['entries'][0]
 
-        filename = data['url'] if stream else ytdl.prepare_filename(data)
+        filename = data['url']
+
         return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
 
 async def espeak_run(*args, **kwargs):
     cmd = "espeak"
     for key, value in kwargs.items():
-        prefix = "-"
-        if len(key) > 1:
-            prefix = "--"
-        args.extend([prefix + key, value])
+        args.extend([f"--{key}" if len(key > 1) else f"-{key}", value])
 
     process = await asyncio.create_subprocess_exec(cmd, *args)
     return_value = await process.wait()
@@ -91,20 +115,12 @@ class vchat(commands.Cog):
 
     @commands.command()
     @commands.is_owner()
-    async def try_fix_youtubedl(self, ctx):
-        """ Do a bunch of things in hopes that it fixes youtubedl """
-        await ctx.send("Alright, here's hoping it works...")
-        global ytdl, ytdl_format_options # yes it's ugly fuck you
-        ytdl.cache.remove()
-
+    async def update_youtubedl(self, ctx):
+        """ Update the youtube_dl module in hopes that it fixes things """
         args = ["-m", "pip", "install", "--upgrade", "youtube-dl"]
         process = await asyncio.create_subprocess_exec(sys.executable, *args)
         await process.wait()
 
-        importlib.reload(youtube_dl)
-
-        # old objects are not updated automatically by importlib.reload
-        ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
         await ctx.send("Well, try it out!")
 
 
@@ -241,7 +257,11 @@ class vchat(commands.Cog):
         url = search
         await ctx.channel.send("Searching...")
         async with ctx.typing():
-            player = await YTDLSource.from_url(url, loop=self.client.loop)
+            try:
+                player = await YTDLSource.from_url(url, loop=self.client.loop)
+            except YTDLException:
+                return await ctx.send("Something bad happened while I was looking for that, sorry")
+
             if player:
                 await ctx.channel.send("Gotcha, queueing " + player.title + ", " + ctx.author.name)
                 self.queue[ctx.guild.id].append(player)
