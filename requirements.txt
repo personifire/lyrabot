@@ -1,4 +1,3 @@
-DerPyBooru==0.7.5
 discord.py[voice]>=1.5.1,<2.0.0
 spacy==2.3.2
 youtube-dl>=2021.4.26

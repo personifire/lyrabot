@@ -1,19 +1,13 @@
 import discord
 from discord.ext import commands
-import derpibooru
-from derpibooru import Search, sort
 
 import asyncio
-import re
-import requests
-
 import aiohttp
 
 class search(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.session = aiohttp.ClientSession()
-        self.searcher = Search(filter_id = 56027) # "everything" filter
 
     def cog_unload(self):
         self.client.loop.create_task(self.session.close()) # failure and exact time don't really matter
@@ -181,22 +175,27 @@ class search(commands.Cog):
             else:
                 extratags = ["-grimdark", "-anthro"]
 
+        search_url = "https://derpibooru.org/api/v1/json/search/images"
         for attempt in range(2):
-            results = self.searcher.query(*extratags, "(" + ", ".join(tags) + ")").sort_by(sort.RANDOM).limit(1)
-
-            if results is not None:
-                posted = False                         # ugly workaround because results doesn't say if there's anything inside unless you look
-                for post in results:
-                    await ctx.send(post.url)
-                    posted = True
-                if posted:
-                    break
+            params = { 
+                    'q': f"{', '.join(extratags)}, ({', '.join(tags)})",
+                    'sf': 'random',
+                    'per_page': 1,
+            }
+            async with self.session.get(search_url, params = params) as search:
+                if search.ok:
+                    images = (await search.json())["images"]
+                    if len(images) > 0:
+                        return await ctx.send(f"https://derpibooru.org/{images[0]['id']}")
+                else:
+                    return await ctx.send(f"Uh... Whoops! ({search.status}). Try again?")
 
             # first attempt didn't work, try the dumb underscore/space thing
             tags = ",".join(tags).replace(" ", ",").replace("_", " ").split(",")
 
-        if not posted:
-            await ctx.channel.send('No results for search "' + args + '". Too niche!')
+        # neither attempt worked, rip
+        return await ctx.channel.send('No results for search "' + args + '". Too niche!')
+
 
 def setup(client):
     client.add_cog(search(client))
