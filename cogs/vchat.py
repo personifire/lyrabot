@@ -149,7 +149,7 @@ class vchat(commands.Cog):
         vchannel = before.channel
         if vchannel:
             vc = vchannel.guild.voice_client
-            if vc and len(vc.channel.members) == 1:
+            if vc and all(member.bot for member in vc.channel.members):
                 await self.leave_channel(vchannel.guild)
 
 
