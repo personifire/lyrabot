@@ -51,7 +51,8 @@ async def ytdl_get_data(url):
     await ytdl_process.wait()
     if ytdl_process.returncode != 0:
         raise YTDLException("lol")
-    return json.loads((await ytdl_process.stdout.readline()).decode("utf-8"))
+
+    return json.loads((await ytdl_process.stdout.read()).decode("utf-8"))
 
 class YTDLSource(discord.PCMVolumeTransformer):
     def __init__(self, source, *, data, volume=0.25):
