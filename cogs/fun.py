@@ -193,10 +193,12 @@ class fun(commands.Cog):
 
     @commands.command()
     @commands.cooldown(2, 7, commands.BucketType.user)
-    async def avatar(self, ctx):
+    async def avatar(self, ctx, user:discord.User = None):
         """ Gets a link to the mentioned user's avatar """
+        if user:
+            return await ctx.send(user.avatar_url)
         if len(ctx.message.mentions) == 0:
-            await ctx.channel.send(ctx.author.avatar_url)
+            return await ctx.channel.send(ctx.author.avatar_url)
         async with ctx.channel.typing():
             for user in ctx.message.mentions:
                 await ctx.channel.send(user.avatar_url)
