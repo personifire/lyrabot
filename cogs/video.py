@@ -60,7 +60,7 @@ class video(commands.Cog):
                 return await ctx.send("Is there a video to stickbug?")
 
         async with ctx.typing():
-            if not await stickbugify(delay, video):
+            if not await stickbugify(delay, video.split()[0]):
                 await ctx.send(file=discord.File('data/stickbug.mp4'))
             else:
                 await ctx.send("Sorry, stickbug just ain't feeling it today!")
