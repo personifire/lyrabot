@@ -61,7 +61,7 @@ class admin(commands.Cog):
         for index, member in enumerate(ctx.guild.members):
             if len(role_selection) == 0:
                 role_selection = [role for role in roles] * 2
-                shuffle(role_selection)
+                random.shuffle(role_selection)
             await member.add_roles(role_selection.pop())
             asyncio.sleep(1)
 
