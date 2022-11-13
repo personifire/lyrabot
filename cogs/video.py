@@ -65,5 +65,5 @@ class video(commands.Cog):
             else:
                 await ctx.send("Sorry, stickbug just ain't feeling it today!")
 
-def setup(client):
-    client.add_cog(video(client))
+async def setup(client):
+    await client.add_cog(video(client))

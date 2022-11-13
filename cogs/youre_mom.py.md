@@ -588,8 +588,8 @@ class youre_mom(commands.Cog):
 The [character limit for a chat message](https://discord.com/developers/docs/resources/channel#create-message-params) is 2000 characters. Specifically, this is [2000 code points](https://github.com/discord/discord-api-docs/issues/1315#issuecomment-577461770), which means that it's safe to use Python's `len()`.
 
 ```python
-def setup(client):
-    client.add_cog(youre_mom())
+async def setup(client):
+    await client.add_cog(youre_mom())
 ```
 
 ### Discord message formatting

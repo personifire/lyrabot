@@ -126,7 +126,7 @@ class meta(commands.Cog):
             await ctx.send("Something weird happened on the update. Error was: ```{err}```\n -- Gonna keep going!")
 
         try:
-            try_load(self.client, extension)
+            await try_load(self.client, extension)
             await ctx.send(f"{extension} loaded!")
         except Exception as e:
             print(f'{extension} could not be loaded. [{traceback.format_exc()}]')
@@ -158,7 +158,7 @@ class meta(commands.Cog):
         reload_deny    = "\n\n"
         for extension in to_reload:
             try:
-                try_load(self.client, extension)
+                await try_load(self.client, extension)
                 reload_confirm += f"{extension} reloaded!\n"
             except Exception as e:
                 reload_deny    += f"{extension} could not be loaded!\n"
@@ -167,12 +167,12 @@ class meta(commands.Cog):
         await ctx.send("All done!")
 
 
-def try_load(client, extension):
+async def try_load(client, extension):
     try:
-        client.load_extension(extension)
+        await client.load_extension(extension)
         print(f'Loaded {extension}')
     except commands.ExtensionAlreadyLoaded:
-        client.reload_extension(extension)
+        await client.reload_extension(extension)
         print(f'Reloaded {extension}')
 
 
@@ -185,5 +185,5 @@ def pull_from_git():
         return f"{traceback.format_exc(limit=1)}"
 
 
-def setup(client):
-    client.add_cog(meta(client))
+async def setup(client):
+    await client.add_cog(meta(client))

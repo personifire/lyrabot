@@ -47,5 +47,5 @@ class image(commands.Cog):
     def cog_unload(self):
         importlib.reload(lib.hat)
 
-def setup(client):
-    client.add_cog(image(client))
+async def setup(client):
+    await client.add_cog(image(client))

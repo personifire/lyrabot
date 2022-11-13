@@ -224,5 +224,5 @@ class fun(commands.Cog):
             await ctx.channel.send("Sorry, I can't find that one!")
 
 
-def setup(client):
-    client.add_cog(fun(client))
+async def setup(client):
+    await client.add_cog(fun(client))

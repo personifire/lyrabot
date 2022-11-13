@@ -197,5 +197,5 @@ class search(commands.Cog):
         return await ctx.channel.send('No results for search "' + args + '". Too niche!')
 
 
-def setup(client):
-    client.add_cog(search(client))
+async def setup(client):
+    await client.add_cog(search(client))

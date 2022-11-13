@@ -15,19 +15,26 @@ Players join the lobby individually, and can leave at any time.
     Needs at least 2 players to play.
     Anybody in the lobby can start the game immediately.
 
-ideas:
+todo:
     house rules
-
+    instanced games per channel / redo PM play
 """
+
+class HouseRule:
+    pass
+
+class UnoGame:
+    pass
 
 DEAL_SIZE = 7
 
-class Uno(commands.Cog):
+class UnoCog(commands.Cog):
     """ Runs a game of uno!
 
     Join or leave an uno lobby with other players, and start the game whenever you're ready.
     May be slightly quirky when used across multiple servers...
     """
+
     def __init__(self, client):
         self.lock       = asyncio.Lock()
         self.debug      = False
@@ -37,7 +44,7 @@ class Uno(commands.Cog):
 
     def helpstr(self):
         helpstr  = "```"
-        helpstr += "!uno [help]             Prints this message\n"
+        helpstr += "!uno help               Prints this message\n"
         helpstr += "!uno join               Joins the lobby\n"
         helpstr += "!uno leave              Leaves the lobby or the game\n"
         helpstr += "!uno start              Starts a game with everybody in the lobby\n"
@@ -49,6 +56,7 @@ class Uno(commands.Cog):
         helpstr += "```"
         return helpstr
 
+    # It's easier to do this than to actually think about concurrency...
     async def cog_before_invoke(self, ctx):
         await self.lock.acquire()
 
@@ -58,13 +66,14 @@ class Uno(commands.Cog):
 
     @commands.group(case_insensitive = True)
     async def uno(self, ctx):
-        """ Prints help for uno """
+        """ Play a game of uno. Try `!uno join`! """
         if ctx.invoked_subcommand is None:
             await ctx.channel.send(self.helpstr())
         self.call_level = 0
 
     @uno.command(name="help")
     async def uno_help(self, ctx):
+        "Prints this message."
         await self.debug_print("help entered", ctx)
         self.call_level += 1
         await ctx.channel.send(self.helpstr())
@@ -517,5 +526,5 @@ class Uno(commands.Cog):
         self.deck += [(color, special)     for color in colors for special in specials]
         self.deck += [("wild", wildtype)   for wildtype in wilds]
 
-def setup(client):
-    client.add_cog(Uno(client))
+async def setup(client):
+    await client.add_cog(UnoCog(client))

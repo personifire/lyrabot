@@ -123,5 +123,5 @@ class react(commands.Cog):
     async def thonk(self, ctx):
         await self.add_emote("<:thonk:532534756093460481>", ctx)
 
-def setup(client):
-    client.add_cog(react(client))
+async def setup(client):
+    await client.add_cog(react(client))

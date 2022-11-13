@@ -204,8 +204,8 @@ class youre_mom(commands.Cog):
         await vc.vtts(ctx, txt = text)
 
 
-def setup(client):
-    client.add_cog(youre_mom(client))
+async def setup(client):
+    await client.add_cog(youre_mom(client))
 
 
 MENTION_EMOJI = re.compile(r"<(#|@[!&]?|a?:[A-Za-z0-9_]{2,}:)\d+>")

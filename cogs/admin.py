@@ -50,6 +50,16 @@ class admin(commands.Cog):
                         await user.remove_roles(role)
         except Exception as e:
             raise e
+    
+    @commands.command()
+    @commands.has_guild_permissions(manage_roles = True)
+    @commands.bot_has_guild_permissions(manage_roles = True)
+    async def persist_roles(self, ctx, *roles):
+        """ Backs up current role assignments and permission overrides. 
+        
+        Will attempt to reassign these roles if a member leaves and rejoins.
+        """
+        pass
 
     @commands.command()
     @commands.has_guild_permissions(manage_roles = True)
@@ -67,5 +77,5 @@ class admin(commands.Cog):
 
 
 
-def setup(client):
-    client.add_cog(admin(client))
+async def setup(client):
+    await client.add_cog(admin(client))
