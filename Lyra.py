@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import sys
 import os
@@ -21,6 +22,8 @@ owners = set(owners)
 
 intents = discord.Intents.default()
 intents.members = True
+intents.messages = True
+intents.message_content = True
 
 allowed_mentions = discord.AllowedMentions(replied_user = False)
 
@@ -140,30 +143,29 @@ def get_token():
             raise Exception("Could not find token")
     return token
 
-def load_meta():
+async def load_cogs():
     extensions = [os.path.splitext(cog) for cog in os.listdir(EXTDIR) if os.path.isfile(f"{EXTDIR}/{cog}")]
     extensions = [f"{EXTDIR}.{cog}" for cog, ext in extensions if ext == ".py"]
     for extension in extensions:
         try:
-            client.load_extension(extension)
+            await client.load_extension(extension)
             print(f'Loaded {extension}')
         except Exception as e:
             print(f'{extension} could not be loaded. [{e}]')
             raise e
 
-def main():
+async def main():
     token = get_token()
-    load_meta()
+    await load_cogs()
 
-    client.run(token)
+    async with client:
+        await client.start(token)
 
-    print("Closing client")
-    try:
-        client.close().send(None)
-    except StopIteration:
-        print("All done!")
+    print("Closing client (?)")
+    await client.close()
+    print("All done!")
     sys.exit()
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
