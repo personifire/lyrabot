@@ -199,13 +199,13 @@ class fun(commands.Cog):
             if isinstance(user, str):
                 await ctx.send("I don't think I know that one, sorry!")
             else:
-                await ctx.send(user.avatar_url)
+                await ctx.send(user.display_avatar)
         elif len(ctx.message.mentions) == 0:
-            return await ctx.channel.send(ctx.author.avatar_url)
+            return await ctx.channel.send(ctx.author.display_avatar)
         else:
             async with ctx.channel.typing():
                 for user in ctx.message.mentions:
-                    await ctx.channel.send(user.avatar_url)
+                    await ctx.channel.send(user.display_avatar)
 
     @commands.command()
     @commands.cooldown(2, 7, commands.BucketType.user)

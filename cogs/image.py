@@ -15,16 +15,20 @@ class image(commands.Cog):
     async def santahat(self, ctx, image:typing.Union[discord.Member, str] = None):
         """ Get into the holiday cheer!
 
-        Will take a image URL, user mention, attachment, or just your avatar
+        Will take a image URL, user mention, attachment (possibly in reply), or just your avatar
         """
         # set arg appropriately
         if isinstance(image, discord.Member):
-            image = str(image.avatar_url)
+            image = str(image.display_avatar)
         elif image is None:
             if len(ctx.message.attachments) > 0:
                 image = ctx.message.attachments[0].url
+            elif ctx.message.reference is not None:
+                msg = await ctx.channel.fetch_message(ctx.message.reference.message_id)
+                if len(msg.attachments) > 0:
+                    image = msg.attachments[0].url
             else:
-                image = str(ctx.author.avatar_url)
+                image = str(ctx.author.display_avatar)
 
         img_outname = image.split('/')[-1].split('?')[0].split('#')[0] # this is kind of dumb tbqh
         img_outname = f'data/{img_outname}'
