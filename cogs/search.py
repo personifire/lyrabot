@@ -81,9 +81,9 @@ class search(commands.Cog):
         # trying to reverse search more than one image is for nerds
         if len(msg.embeds) > 0:
             for embed in msg.embeds:
-                if embed.thumbnail != discord.Embed.Empty and embed.thumbnail.url != discord.Embed.Empty:
+                if embed.thumbnail is not None and embed.thumbnail.url is not None:
                     return embed.thumbnail.url
-                if embed.image != discord.Embed.Empty and embed.image.url != discord.Embed.Empty:
+                if embed.image is not None and embed.image.url is not None:
                     return embed.image.url
         elif len(msg.attachments) > 0:
             valid_image_content_types = [

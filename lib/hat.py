@@ -13,7 +13,7 @@ HATDIR = 'files/santahats'
 OUTDIR = 'data'
 
 def get_hats():
-    return [f'{HATDIR}/{hat_name}' for hat_name in os.listdir(HATDIR)]
+    return [f'{HATDIR}/{hat_name}' for hat_name in os.listdir(HATDIR) if hat_name[-4:] == '.png']
 
 def line_detect(img):
     edges = cv2.Canny(img, 100, 200) # very arbitrary threshold values

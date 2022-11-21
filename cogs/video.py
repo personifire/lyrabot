@@ -53,7 +53,7 @@ class video(commands.Cog):
                 if len(vidmsg.attachments) > 0:
                     video = vidmsg.attachments[0].url
                     break
-                elif len(vidmsg.embeds) > 0 and vidmsg.embeds[0].video.url is not discord.Embed.Empty:
+                elif len(vidmsg.embeds) > 0 and vidmsg.embeds[0].video.url is not None:
                     video = vidmsg.embeds[0].video.url
                     break
             if video is None:
