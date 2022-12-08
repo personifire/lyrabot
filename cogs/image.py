@@ -42,6 +42,11 @@ class image(commands.Cog):
                 image = str(ctx.author.display_avatar)
 
         img_outname = image.split('/')[-1].split('?')[0].split('#')[0] # this is kind of dumb tbqh
+        root, ext = os.path.splitext(img_outname)
+        if ext.lower() == ".gif":
+            # hatten() uses cv2.imwrite, which doesn't support writing GIFs. Pillow does,
+            # but we might as well use PNG since it isn't limited to 256 colors.
+            img_outname = root + ".png"
         img_outname = self.reserve_imgname(img_outname)
 
         async with ctx.typing():
@@ -79,6 +84,11 @@ class image(commands.Cog):
                 image = str(ctx.author.display_avatar)
 
         img_outname = image.split('/')[-1].split('?')[0].split('#')[0] # this is kind of dumb tbqh
+        root, ext = os.path.splitext(img_outname)
+        if ext.lower() == ".gif":
+            # hatten() uses cv2.imwrite, which doesn't support writing GIFs. Pillow does,
+            # but we might as well use PNG since it isn't limited to 256 colors.
+            img_outname = root + ".png"
         img_outname = self.reserve_imgname(img_outname)
 
         async with ctx.typing():
