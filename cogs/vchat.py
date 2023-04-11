@@ -100,8 +100,7 @@ class vchat(commands.Cog):
         if message.content.lower() == "gay chat" and message.channel.name.lower() == "vchat":
             for vc in message.guild.voice_channels:
                 if len(vc.members) > 0:
-                    voice_client = message.guild.voice_client
-                    await self.join_channel(voice_client, vc)
+                    await self.join_channel(message.guild.voice_client, vc)
                     voice_client = message.guild.voice_client
 
                     player = discord.FFmpegPCMAudio("files/urmom.mp3", options = ffmpeg_options['options'])
@@ -150,7 +149,7 @@ class vchat(commands.Cog):
         vchannel = before.channel
         if vchannel:
             vc = vchannel.guild.voice_client
-            if vc and all(member.bot for member in vc.channel.members):
+            if vc is None or all(member.bot for member in vc.channel.members):
                 await self.leave_channel(vchannel.guild)
 
 
@@ -180,13 +179,13 @@ class vchat(commands.Cog):
 
 
     async def leave_channel(self, guild):
-        if guild.voice_client is not None:
-            if guild.id in self.queue:
-                del self.queue[guild.id]
-            await guild.voice_client.disconnect()
-            print("disconnected from vc")
+        if guild.id in self.queue:
+            del self.queue[guild.id]
             if len(self.queue) == 0:
                 await self.client.change_presence(activity=discord.Game('her lyre'))
+        if guild.voice_client is not None:
+            await guild.voice_client.disconnect()
+            print("disconnected from vc")
             return True
         else:
             return False
@@ -194,10 +193,7 @@ class vchat(commands.Cog):
 
     async def join_channel(self, voice_client, channel):
         if voice_client is None:
-            try:
-                vc = await channel.connect()
-            except:
-                return print("Exception in join_channel")
+            vc = await channel.connect() # can raise asyncio.TimeoutError
             self.queue[channel.guild.id] = []
             print("connected to vc")
             await self.client.change_presence(activity=discord.Game('ly.radio'))

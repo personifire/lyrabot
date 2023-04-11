@@ -68,12 +68,12 @@ class admin(commands.Cog):
         """ Creates a number of new roles, and assigns exactly one of each to each member. """
         roles = [await ctx.guild.create_role(name = "holiday " + str(rolenum + 1)) for rolenum in range(num_roles)]
         role_selection = []
-        for index, member in enumerate(ctx.guild.members):
+        for member in ctx.guild.members:
             if len(role_selection) == 0:
                 role_selection = [role for role in roles] * 2
                 random.shuffle(role_selection)
             await member.add_roles(role_selection.pop())
-            asyncio.sleep(1)
+            await asyncio.sleep(1)
 
 
 
