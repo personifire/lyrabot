@@ -31,7 +31,8 @@ class admin(commands.Cog):
             tracker = self.invite_trackers[ctx.guild.id]
 
             tracker['channel_id'] = ctx.channel.id
-            async for invite in ctx.guild.invites():
+            invites = await ctx.guild.invites()
+            for invite in invites:
                 tracker[invite.id] = invite.uses
             return await ctx.send("Invite tracking enabled! Messages will be sent in this channel.")
 
@@ -39,15 +40,17 @@ class admin(commands.Cog):
     async def on_member_join(self, member):
         if member.guild.id in self.invite_trackers:
             tracker = self.invite_trackers[member.guild.id]
-            async for invite in member.guild.invites():
+            invites = await ctx.guild.invites()
+            for invite in invites:
                 if invite.id not in tracker:
                     tracker[invite.id] = 0
+
                 if tracker[invite.id] != invite.uses:
                     channel = self.client.get_channel(tracker['channel_id'])
                     if not channel: # well, it's better than going into some weird state
                         del self.invite_trackers[member.guild.id]
                         return
-                    # if we have false positives, we might get multiple hits for a single member...
+                    # if we have false positives, we might get multiple hits for a single member -- hopefully not
                     message = f"{member} (snowflake {member.id}) likely joined via invite {invite.id}"
                     if invite.inviter:
                         message += f", made by {invite.inviter}."
