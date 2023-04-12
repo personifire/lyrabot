@@ -47,13 +47,14 @@ class admin(commands.Cog):
                     tracker[invite.id] = 0
 
                 if tracker[invite.id] != invite.uses:
+                    print("  invite tracker saw likely used invite")
                     channel = self.client.get_channel(tracker['channel_id'])
                     if not channel: # well, it's better than going into some weird state
                         print(f"invite tracking channel was deleted for guild {member.guild.id} :(")
                         del self.invite_trackers[member.guild.id]
                         return
                     # if we have false positives, we might get multiple hits for a single member -- hopefully not
-                    message = f"{member} (snowflake {member.id}) likely joined via invite {invite.id}"
+                    message = f"{member} (snowflake {member.id}) likely joined via invite {invite.url}"
                     if invite.inviter:
                         message += f", made by {invite.inviter}."
                     else:
