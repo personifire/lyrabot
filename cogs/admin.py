@@ -21,6 +21,7 @@ class admin(commands.Cog):
         await ctx.send(msg)
 
     @commands.command()
+    @commands.has_guild_permissions(manage_guild = True)
     @commands.bot_has_guild_permissions(manage_guild = True) # unfortunate but necessary
     async def toggle_track_invites(self, ctx):
         if ctx.guild.id in self.invite_trackers:
@@ -40,7 +41,7 @@ class admin(commands.Cog):
     async def on_member_join(self, member):
         if member.guild.id in self.invite_trackers:
             tracker = self.invite_trackers[member.guild.id]
-            invites = await ctx.guild.invites()
+            invites = await member.guild.invites()
             for invite in invites:
                 if invite.id not in tracker:
                     tracker[invite.id] = 0
@@ -48,6 +49,7 @@ class admin(commands.Cog):
                 if tracker[invite.id] != invite.uses:
                     channel = self.client.get_channel(tracker['channel_id'])
                     if not channel: # well, it's better than going into some weird state
+                        print(f"invite tracking channel was deleted for guild {member.guild.id} :(")
                         del self.invite_trackers[member.guild.id]
                         return
                     # if we have false positives, we might get multiple hits for a single member -- hopefully not
@@ -56,7 +58,7 @@ class admin(commands.Cog):
                         message += f", made by {invite.inviter}."
                     else:
                         message += '.'
-                    return await channel.send(message)
+                    await channel.send(message)
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, rawreactevent):
