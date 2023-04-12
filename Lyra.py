@@ -50,7 +50,9 @@ async def on_resumed():
 @client.event
 async def on_command_error(ctx, err):
     if isinstance(err, commands.CommandOnCooldown):
-        await ctx.channel.send(f"You're on cooldown for another {round(err.retry_after)}s, {ctx.author.display_name}")
+        await ctx.send(f"You're on cooldown for another {round(err.retry_after)}s, {ctx.author.display_name}")
+    elif isinstance(err, commands.NoPrivateMessage):
+        await ctx.send("Sorry, that command doesn't work in PMs!")
     else:
         raise err # gotta log them somewhere
 

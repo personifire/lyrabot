@@ -8,6 +8,7 @@ import re
 class admin(commands.Cog):
     def __init__(self, client):
         self.client = client
+        self.invite_trackers = {} # should put this in a db but I'm not figuring out how to use one properly for this right now
 
     @commands.command()
     @commands.has_guild_permissions(manage_roles = True)
@@ -18,6 +19,41 @@ class admin(commands.Cog):
         msg += " role! Or remove (or react then remove) to self-remove the role."
 
         await ctx.send(msg)
+
+    @commands.command()
+    @commands.bot_has_guild_permissions(manage_guild = True) # unfortunate but necessary
+    async def toggle_track_invites(self, ctx):
+        if ctx.guild.id in self.invite_trackers:
+            del self.invite_trackers[ctx.guild.id]
+            return await ctx.send("Removed invite tracking.")
+        else:
+            self.invite_trackers[ctx.guild.id] = {}
+            tracker = self.invite_trackers[ctx.guild.id]
+
+            tracker['channel_id'] = ctx.channel.id
+            async for invite in ctx.guild.invites():
+                tracker[invite.id] = invite.uses
+            return await ctx.send("Invite tracking enabled! Messages will be sent in this channel.")
+
+    @commands.Cog.listener()
+    async def on_member_join(self, member):
+        if member.guild.id in self.invite_trackers:
+            tracker = self.invite_trackers[member.guild.id]
+            async for invite in member.guild.invites():
+                if invite.id not in tracker:
+                    tracker[invite.id] = 0
+                if tracker[invite.id] != invite.uses:
+                    channel = self.client.get_channel(tracker['channel_id'])
+                    if not channel: # well, it's better than going into some weird state
+                        del self.invite_trackers[member.guild.id]
+                        return
+                    # if we have false positives, we might get multiple hits for a single member...
+                    message = f"{member} (snowflake {member.id}) likely joined via invite {invite.id}"
+                    if invite.inviter:
+                        message += f", made by {invite.inviter}."
+                    else:
+                        message += '.'
+                    return await channel.send(message)
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, rawreactevent):
