@@ -61,6 +61,9 @@ class admin(commands.Cog):
                         message += '.'
                     await channel.send(message)
 
+                # update invite use count
+                tracker[invite.id] = invite.uses
+
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, rawreactevent):
         await self.react_change_role(rawreactevent)
