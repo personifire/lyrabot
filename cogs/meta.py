@@ -63,7 +63,7 @@ class meta(commands.Cog):
         try:
             exec(funcstr, env)
         except Exception as e:
-            return await ctx.send(f'Function definition caught exception:\n```{e.__class__.__name__}: {e}\n```')
+            return await ctx.send(f'Caught exception:\n```{e.__class__.__name__}: {e}\n```')
         
         func = env['func']
         try:
@@ -71,17 +71,16 @@ class meta(commands.Cog):
                 ret = await func()
         except Exception as e:
             value = output_capture.getvalue()
-            await ctx.send(f'output:```{value} ```Function run caught exception:```{traceback.format_exc()} ```')
-        else:
-            value = output_capture.getvalue()
-            await ctx.message.add_reaction('\u2705')
+            return await ctx.send(f'output:```{value} ```Caught exception:```{traceback.format_exc()} ```')
+        value = output_capture.getvalue()
+        await ctx.message.add_reaction('\u2705')
 
-            if ret is None:
-                if value:
-                    await ctx.send(f'output:```{value}```')
-            else:
-                self._last_result = ret
-                await ctx.send(f'output:```{value} ```returned:```{ret} ```')
+        if ret is None:
+            if value:
+                await ctx.send(f'output:```{value}```')
+        else:
+            self._last_result = ret
+            await ctx.send(f'output:```{value} ```returned:```{ret} ```')
 
 
     @commands.command()
