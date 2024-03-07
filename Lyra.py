@@ -3,6 +3,7 @@ import logging
 import sys
 import os
 
+import asyncpg
 import discord
 from discord.ext import commands
 
@@ -27,7 +28,7 @@ intents.message_content = True
 
 allowed_mentions = discord.AllowedMentions(replied_user = False)
 
-client = commands.Bot(
+bot = commands.Bot(
         command_prefix = '!',
         case_insensitive = True,
         intents = intents,
@@ -39,15 +40,15 @@ status = True
 
 ############################################## EVENTS ##############################################
 
-@client.event
+@bot.event
 async def on_ready():
     print("Lyra is online")
 
-@client.event
+@bot.event
 async def on_resumed():
     print("Lyra has reconnected")
 
-@client.event
+@bot.event
 async def on_command_error(ctx, err):
     if isinstance(err, commands.CommandOnCooldown):
         await ctx.send(f"You're on cooldown for another {round(err.retry_after)}s, {ctx.author.display_name}")
@@ -56,7 +57,7 @@ async def on_command_error(ctx, err):
     else:
         raise err # gotta log them somewhere
 
-@client.event
+@bot.event
 async def on_member_remove(member):
     lyra = None
     for channel in member.guild.channels:
@@ -67,7 +68,7 @@ async def on_member_remove(member):
     else:
         print(member.display_name + " left server: " + member.guild.name)
 
-@client.event
+@bot.event
 async def on_member_join(member):
     role = discord.utils.get(member.guild.roles, name = 'everypony')
     if role:
@@ -76,18 +77,18 @@ async def on_member_join(member):
 ############################################## COMMANDS ##############################################
 
 
-@client.command()
+@bot.command()
 @commands.cooldown(2, 7, commands.BucketType.user)
 async def bon(ctx):
     """ bon """
     await ctx.channel.send('bon')
 
-@client.command()
+@bot.command()
 async def dm(ctx):
     """ also bon """
     await ctx.message.author.send("bon")
 
-@client.command()
+@bot.command()
 async def nuke(ctx, *args):
     """ :dab: """
     author = ctx.author
@@ -100,7 +101,7 @@ async def nuke(ctx, *args):
     else:
         await ctx.channel.send("You're gonna have a bad time. Might need more perms for that!")
 
-@client.command()
+@bot.command()
 async def snuggle(ctx):
     """ for snugs """
     if ctx.message.author.id != STAR:
@@ -108,21 +109,21 @@ async def snuggle(ctx):
     global status
     if status:
         status = not status
-        await client.change_presence(activity=discord.Game('with some faggo'))
+        await bot.change_presence(activity=discord.Game('with some faggo'))
     else:
         status = not status
-        await client.change_presence(activity=discord.Game('her lyre'))
+        await bot.change_presence(activity=discord.Game('her lyre'))
 
-@client.command()
+@bot.command()
 async def rest(ctx, *args):
     """ For when lyra gets tired """
     if ctx.author.id in owners:
-            sleepytwi = discord.utils.get(client.emojis, name = 'sleepytwi')
+            sleepytwi = discord.utils.get(bot.emojis, name = 'sleepytwi')
             if sleepytwi:
                 await ctx.channel.send(sleepytwi)
             else:
                 await ctx.channel.send("Alright. Nighty-night!")
-            await client.close()
+            await bot.close()
             print('Lyra is offline')
     else:
         await ctx.channel.send("Aww, but I'm not tired yet!")
@@ -150,21 +151,25 @@ async def load_cogs():
     extensions = [f"{EXTDIR}.{cog}" for cog, ext in extensions if ext == ".py"]
     for extension in extensions:
         try:
-            await client.load_extension(extension)
+            await bot.load_extension(extension)
             print(f'Loaded {extension}')
         except Exception as e:
             print(f'{extension} could not be loaded. [{e}]')
             raise e
 
+async def connect_db():
+    bot.db_conn = await asyncpg.connect(host='/var/run/postgresql')
+
 async def main():
     token = get_token()
+    await connect_db()
     await load_cogs()
 
-    async with client:
-        await client.start(token)
+    async with bot:
+        await bot.start(token)
 
-    print("Closing client (?)")
-    await client.close()
+    print("Closing bot...")
+    await asyncio.gather(bot.close(), bot.db_conn.close())
     print("All done!")
     sys.exit()
 
