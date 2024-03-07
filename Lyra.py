@@ -7,6 +7,7 @@ import asyncpg
 import discord
 from discord.ext import commands
 
+# logger will eat exception and error messages
 logger = logging.getLogger('discord')
 logger.setLevel(logging.INFO)
 handler = logging.FileHandler(filename='bot.log')
