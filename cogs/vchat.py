@@ -7,7 +7,6 @@ import sys
 import discord
 from discord.ext import commands
 import discord.errors
-import youtube_dl
 
 ytdl_format_options = {
     'format': 'bestaudio/best',
@@ -19,7 +18,7 @@ ytdl_format_options = {
     'ignore-errors': False,
     'quiet': True,
     'no-warnings': True,
-    'default-search': 'auto',
+    'default-search': 'ytsearch',
     'source-address': '0.0.0.0' # bind to ipv4 since ipv6 addresses cause issues sometimes
 }
 
@@ -32,8 +31,8 @@ class YTDLException(Exception):
     pass
 
 async def ytdl_get_data(url):
-    exe  = sys.executable             # run a python subprocess
-    args = ["-m", "youtube_dl", "-J"] # to call youtube_dl and dump info as a single line of JSON
+    exe  = "yt-dlp"
+    args = ["-J"] # to call yt-dlp and dump info as a single line of JSON
 
     for flag, value in ytdl_format_options.items():
         if value is False:
@@ -47,12 +46,14 @@ async def ytdl_get_data(url):
 
     args.append(url)
 
-    ytdl_process = await asyncio.create_subprocess_exec(exe, *args, stdout=subprocess.PIPE)
-    await ytdl_process.wait()
-    if ytdl_process.returncode != 0:
-        raise YTDLException("lol")
+    ytdl_process = await asyncio.create_subprocess_exec(exe, *args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-    return json.loads((await ytdl_process.stdout.read()).decode("utf-8"))
+    stdout, stderr = await ytdl_process.communicate()
+    await asyncio.wait_for(ytdl_process.wait(), timeout=10)
+    if ytdl_process.returncode != 0:
+        raise YTDLException(stderr) # :)
+
+    return json.loads(stdout.decode("utf-8"))
 
 class YTDLSource(discord.PCMVolumeTransformer):
     def __init__(self, source, *, data, volume=0.25):
@@ -89,6 +90,11 @@ async def espeak_run(*args, **kwargs):
 
     return return_value
 
+# I tried very hard, you can tell
+class vc_connection:
+    def __init__(self, client):
+        pass
+
 class vchat(commands.Cog):
     def __init__(self, client):
         self.client = client
@@ -113,11 +119,11 @@ class vchat(commands.Cog):
                     return
 
 
-    @commands.command()
+    @commands.command(aliases = ["update_ytdlp"])
     @commands.is_owner()
     async def update_youtubedl(self, ctx):
-        """ Update the youtube_dl module in hopes that it fixes things """
-        args = ["-m", "pip", "install", "--upgrade", "youtube-dl"]
+        """ Update the yt-dlp module in hopes that it fixes things """
+        args = ["-m", "pip", "install", "--upgrade", "yt-dlp"]
         process = await asyncio.create_subprocess_exec(sys.executable, *args)
         await process.wait()
 
@@ -256,8 +262,9 @@ class vchat(commands.Cog):
         async with ctx.typing():
             try:
                 player = await YTDLSource.from_url(url, loop=self.client.loop)
-            except YTDLException:
-                return await ctx.send("Something bad happened while I was looking for that, sorry!")
+            except YTDLException as err:
+                await ctx.send("Something bad happened while I was looking for that, sorry!")
+                raise err
 
             if player:
                 await ctx.channel.send("Gotcha, queueing " + player.title + ", " + ctx.author.name)
