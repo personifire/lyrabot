@@ -210,6 +210,7 @@ async def setup(client):
 
 MENTION_EMOJI = re.compile(r"<(#|@[!&]?|a?:[A-Za-z0-9_]{2,}:)\d+>")
 
+@spacy.Language.component("retokenize_mention_emoji")
 def retokenize_mention_emoji(doc):
     with doc.retokenize() as retokenizer:
         for match in MENTION_EMOJI.finditer(doc.text):
@@ -221,8 +222,8 @@ def retokenize_mention_emoji(doc):
 
 
 def setup_nlp_markup(nlp):
-    prefixes = nlp.Defaults.prefixes + ("~", "\\|\\|")
-    suffixes = nlp.Defaults.suffixes + ("~", "\\|\\|")
+    prefixes = nlp.Defaults.prefixes + ["~", "\\|\\|"]
+    suffixes = nlp.Defaults.suffixes + ["~", "\\|\\|"]
     nlp.tokenizer.prefix_search = compile_prefix_regex(prefixes).search
     nlp.tokenizer.suffix_search = compile_suffix_regex(suffixes).search
-    nlp.add_pipe(retokenize_mention_emoji, first=True)
+    nlp.add_pipe("retokenize_mention_emoji", first=True)
