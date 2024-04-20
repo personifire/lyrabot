@@ -18,12 +18,17 @@ Players join the lobby individually, and can leave at any time.
 todo:
     house rules
     instanced games per channel / redo PM play
+
+    slash commands + ephemeral messages + live updates
 """
 
 class HouseRule:
     pass
 
 class UnoGame:
+    def __init__(self):
+        # needs: players + hands, deck, kicks etc
+        pass
     pass
 
 DEAL_SIZE = 7
@@ -477,7 +482,7 @@ class UnoCog(commands.Cog):
 
     def reshuffle(self):
         topcard = self.discard.pop()
-        random.shuffle(discard)
+        random.shuffle(self.discard)
         self.deck = self.discard + self.deck
         self.discard = [topcard]
 
