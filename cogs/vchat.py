@@ -1,4 +1,5 @@
 import asyncio
+import io
 import importlib
 import json
 import subprocess
@@ -30,6 +31,9 @@ ffmpeg_options = {
 class YTDLException(Exception):
     pass
 
+class EspeakException(Exception):
+    pass
+
 async def ytdl_get_data(url):
     exe  = "yt-dlp"
     args = ["-J"] # to call yt-dlp and dump info as a single line of JSON
@@ -46,15 +50,12 @@ async def ytdl_get_data(url):
 
     args.append(url)
 
-    print(f"----running ytdl cmd {' '.join(args)}")
     ytdl_process = await asyncio.create_subprocess_exec(exe, *args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     stdout, stderr = await ytdl_process.communicate()
-    await asyncio.wait_for(ytdl_process.wait(), timeout=10)
     if ytdl_process.returncode != 0:
         raise YTDLException(stderr) # :)
 
-    print(f"----done running ytdl cmd")
     return json.loads(stdout.decode("utf-8"))
 
 class YTDLSource(discord.PCMVolumeTransformer):
@@ -82,18 +83,14 @@ class YTDLSource(discord.PCMVolumeTransformer):
 
         return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
 
-async def espeak_run(*args, **kwargs):
+async def espeak_source(*text):
     cmd = "espeak"
-    for key, value in kwargs.items():
-        args.extend([f"--{key}" if len(key > 1) else f"-{key}", value])
 
-    process = await asyncio.create_subprocess_exec(cmd, *args)
-    return_value = await process.wait()
-
-    return return_value
+    process = subprocess.run([cmd, *text, "--stdout"], bufsize=-1, stdout=subprocess.PIPE)
+    return discord.FFmpegPCMAudio(io.BytesIO(process.stdout), options = ffmpeg_options['options'], pipe=True)
 
 # I tried very hard, you can tell
-class vc_connection:
+class VC_Connection:
     def __init__(self, client):
         pass
 
@@ -138,14 +135,14 @@ class vchat(commands.Cog):
             await self.join_channel(ctx.guild.voice_client, ctx.author.voice.channel)
 
         if ctx.guild.voice_client is None:
-            await ctx.send("Not in vchat!")
-            return
+            return await ctx.send("Not in vchat!")
 
-        filename = "data/vtts.wav"
-        await espeak_run(txt, "-w", filename)
+        #filename = "data/vtts.wav"
+        #await espeak_run(txt, "-w", filename)
+        player = await espeak_source(txt)
 
-        player = discord.FFmpegPCMAudio(filename, options = ffmpeg_options['options'])
-        player.title = "txt"
+        #player = discord.FFmpegPCMAudio(filename, options = ffmpeg_options['options'])
+        player.title = txt
 
         self.queue[ctx.guild.id].append(player)
         if not ctx.guild.voice_client.is_playing() and not ctx.guild.voice_client.is_paused():
@@ -167,23 +164,6 @@ class vchat(commands.Cog):
             if guild.voice_client:
                 self.client.loop.create_task(guild.voice_client.disconnect())
         self.queue = {}
-
-
-    @commands.command()
-    @commands.cooldown(1, 10, commands.BucketType.guild)
-    async def vchat(self, ctx):
-        """ Outputs some custom help """
-        output =  "```"
-        output += "!join                  Joins the user's voice channel\n"
-        output += "!leave                 Leaves the voice channel\n"
-        output += "!play [url | search]   Plays or queues audio from the url or search term\n"
-        output += "!pause                 Pauses playback of the current audio\n"
-        output += "!resume                Resumes playback of the current audio\n"
-        output += "!skip [queue number]   Ends playback of the selected audio\n"
-        output += "                         if no number is provided, ends playback of the current audio\n"
-        output += "!queue                 Displays the audio currently in the queue\n"
-        output += "```"
-        await ctx.channel.send(output)
 
 
     async def leave_channel(self, guild):
