@@ -46,6 +46,7 @@ async def ytdl_get_data(url):
 
     args.append(url)
 
+    print(f"----running ytdl cmd {' '.join(args)}")
     ytdl_process = await asyncio.create_subprocess_exec(exe, *args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     stdout, stderr = await ytdl_process.communicate()
@@ -53,6 +54,7 @@ async def ytdl_get_data(url):
     if ytdl_process.returncode != 0:
         raise YTDLException(stderr) # :)
 
+    print(f"----done running ytdl cmd")
     return json.loads(stdout.decode("utf-8"))
 
 class YTDLSource(discord.PCMVolumeTransformer):
@@ -246,31 +248,31 @@ class vchat(commands.Cog):
     async def vplay(self, ctx, *search):
         """ Plays or queues audio from the url or search term """
         search = " ".join(search)
-        server = ctx.guild
+        can_send = ctx.channel.permissions_for(ctx.me).send_messages
 
         if ctx.author.voice and ctx.author.voice.channel:
             await self.join(ctx)
 
         voice_client = ctx.voice_client
 
-        if voice_client is None or ctx.guild.id not in self.queue:
-            await ctx.channel.send("Maybe if I were already in vchat, but I'm not feeling it...")
-            return
+        if can_send and voice_client is None or ctx.guild.id not in self.queue:
+            return await ctx.channel.send("Maybe if I were already in vchat, but I'm not feeling it...")
 
         url = search
-        await ctx.channel.send("Searching...")
+        if can_send: await ctx.channel.send("Searching...")
+
         async with ctx.typing():
             try:
                 player = await YTDLSource.from_url(url, loop=self.client.loop)
             except YTDLException as err:
-                await ctx.send("Something bad happened while I was looking for that, sorry!")
+                if can_send: await ctx.send("Something bad happened while I was looking for that, sorry!")
                 raise err
 
             if player:
-                await ctx.channel.send("Gotcha, queueing " + player.title + ", " + ctx.author.name)
+                if can_send: await ctx.channel.send("Gotcha, queueing " + player.title + ", " + ctx.author.name)
                 self.queue[ctx.guild.id].append(player)
             else:
-                await ctx.channel.send("Can't do that " + ctx.message.author.name)
+                if can_send: await ctx.channel.send("Can't do that " + ctx.message.author.name)
 
             if not ctx.voice_client.is_playing() and not ctx.voice_client.is_paused():
                 print("Nothing was in queue when " + player.title + " was queued")
