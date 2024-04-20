@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 
 import asyncio
+import functools
 import random
 import re
 
@@ -27,6 +28,24 @@ class admin(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    ################################################################################
+    #################################   commands   #################################
+    ################################################################################
+
+    @commands.command()
+    @commands.has_guild_permissions(manage_roles = True)
+    @commands.bot_has_guild_permissions(manage_roles = True)
+    async def holiday(self, ctx, num_roles: int):
+        """ Creates a number of new roles, and assigns exactly one of each to each member. """
+        roles = [await ctx.guild.create_role(name = "holiday {rolenum + 1}") for rolenum in range(num_roles)]
+        role_selection = []
+        for member in ctx.guild.members:
+            if len(role_selection) == 0:
+                role_selection = [role for role in roles] * 2
+                random.shuffle(role_selection)
+            await member.add_roles(role_selection.pop())
+            await asyncio.sleep(1)
+
     @commands.command()
     @commands.has_guild_permissions(manage_roles = True)
     @commands.bot_has_guild_permissions(manage_roles = True)
@@ -36,35 +55,80 @@ class admin(commands.Cog):
         msg += " role! Or remove (or react then remove) to self-remove the role."
 
         await ctx.send(msg)
-
+    
     @commands.command()
     @commands.has_guild_permissions(manage_guild = True)
     @commands.bot_has_guild_permissions(manage_guild = True) # unfortunate but necessary
     async def toggle_track_invites(self, ctx):
         db_conn = self.bot.db_conn
 
-        record = await db_conn.fetchrow("SELECT * FROM inv_tracker_guilds WHERE guild_id=$1;", ctx.guild.id)
-        if record is not None:
-            print(f"deleting tracker in guild {ctx.guild.id}")
-            # disable tracker
-            await db_conn.execute("DELETE FROM inv_tracker_guilds WHERE guild_id=$1;", ctx.guild.id)
-            return await ctx.send("Removed invite tracking.")
-        else:
-            print(f"creating tracker in guild {ctx.guild.id}")
-            # enable tracker and initialize invite counts
-            query = "INSERT INTO inv_tracker_guilds (guild_id, channel_id) VALUES ($1, $2);"
-            await db_conn.execute(query, ctx.guild.id, ctx.channel.id)
-
+        tracker_enabled = await self._add_guild_record("inv_tracker_guilds", ctx.guild.id, ctx.channel.id)
+        if tracker_enabled:
+            # initialize invite counts
             invites = await ctx.guild.invites()
             for invite in invites:
                 print(f"  adding tracked invite with id {invite.id}")
                 query = "INSERT INTO inv_trackers (inv_id, guild_id, count) VALUES ($1, $2, $3);"
                 await db_conn.execute(query, invite.id, ctx.guild.id, invite.uses)
             return await ctx.send("Invite tracking enabled! Messages will be sent in this channel.")
+        else:
+            # get rid of old invite data
+            print(f"deleting tracked invites in guild {ctx.guild.id}")
+            await db_conn.execute("DELETE FROM inv_trackers WHERE guild_id=$1;", ctx.guild.id)
+
+            # disable tracker
+            print(f"deleting invite tracker in guild {ctx.guild.id}")
+            await db_conn.execute(f"DELETE FROM inv_tracker_guilds WHERE guild_id=$1;", ctx.guild.id)
+            return await ctx.send("Removed invite tracking.")
+
+    #################################################################################
+    #################################   listeners   #################################
+    #################################################################################
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_add(self, rawreactevent):
+        await self.react_change_role(rawreactevent)
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_remove(self, rawreactevent):
+        await self.react_change_role(rawreactevent)
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
         await self.invite_tracker_join(member)
+
+    ################################################################################
+    ##############################   event handlers   ##############################
+    ################################################################################
+
+    ##### react roles #####
+
+    async def react_change_role(self, rawreactevent):
+        guild   = discord.utils.get(self.bot.guilds, id=rawreactevent.guild_id)
+        if guild is None:
+            return
+        channel = guild.get_channel(rawreactevent.channel_id)
+        if channel is None:
+            return
+        message = await channel.fetch_message(rawreactevent.message_id)
+        if message is None:
+            return
+
+        if message.author == guild.me:
+            msgregexstr  = "^Use any reaction to this post to self-assign the .*(\(id: (.*)\)) role!"
+            msgregexstr += " Or remove \(or react then remove\) to self-remove the role.$"
+            msgregex = re.compile(msgregexstr)
+            match = msgregex.match(message.content)
+            if match:
+                roleid = int(match.group(2))
+                user = guild.get_member(rawreactevent.user_id)
+                role = guild.get_role(roleid)
+                if rawreactevent.event_type == "REACTION_ADD":
+                    await user.add_roles(role)
+                elif rawreactevent.event_type == "REACTION_REMOVE":
+                    await user.remove_roles(role)
+
+    ##### invite tracker #####
 
     async def invite_tracker_join(self, member):
         db_conn = self.bot.db_conn
@@ -112,65 +176,30 @@ class admin(commands.Cog):
                 message += f"\n* {inv_to_str(inv)}"
         await channel.send(message)
 
-    @commands.Cog.listener()
-    async def on_raw_reaction_add(self, rawreactevent):
-        await self.react_change_role(rawreactevent)
+    #################################################################################
+    ##################################   helpers   ##################################
+    #################################################################################
 
-    @commands.Cog.listener()
-    async def on_raw_reaction_remove(self, rawreactevent):
-        await self.react_change_role(rawreactevent)
-
-    async def react_change_role(self, rawreactevent):
-        try:
-            guild   = discord.utils.get(self.bot.guilds, id=rawreactevent.guild_id)
-            if guild is None:
-                return
-            channel = guild.get_channel(rawreactevent.channel_id)
-            if channel is None:
-                return
-            message = await channel.fetch_message(rawreactevent.message_id)
-            if message is None:
-                return
-
-            if message.author == guild.me:
-                msgregexstr  = "^Use any reaction to this post to self-assign the .*(\(id: (.*)\)) role!"
-                msgregexstr += " Or remove \(or react then remove\) to self-remove the role.$"
-                msgregex = re.compile(msgregexstr)
-                match = msgregex.match(message.content)
-                if match:
-                    roleid = int(match.group(2))
-                    user = guild.get_member(rawreactevent.user_id)
-                    role = guild.get_role(roleid)
-                    if rawreactevent.event_type == "REACTION_ADD":
-                        await user.add_roles(role)
-                    elif rawreactevent.event_type == "REACTION_REMOVE":
-                        await user.remove_roles(role)
-        except Exception as e:
-            raise e
-    
-    @commands.command()
-    @commands.has_guild_permissions(manage_roles = True)
-    @commands.bot_has_guild_permissions(manage_roles = True)
-    async def persist_roles(self, ctx, *roles):
-        """ Backs up current role assignments and permission overrides. 
-        
-        Will attempt to reassign these roles if a member leaves and rejoins.
+    async def _add_guild_record(self, table_name, guild_id, channel_id=None):
+        """Create or delete a table entry for a guild
+        Returns true if a new entry was created, or false if one already existed.
         """
-        pass
+        db_conn = self.bot.db_conn
 
-    @commands.command()
-    @commands.has_guild_permissions(manage_roles = True)
-    @commands.bot_has_guild_permissions(manage_roles = True)
-    async def holiday(self, ctx, num_roles: int):
-        """ Creates a number of new roles, and assigns exactly one of each to each member. """
-        roles = [await ctx.guild.create_role(name = "holiday {rolenum + 1}") for rolenum in range(num_roles)]
-        role_selection = []
-        for member in ctx.guild.members:
-            if len(role_selection) == 0:
-                role_selection = [role for role in roles] * 2
-                random.shuffle(role_selection)
-            await member.add_roles(role_selection.pop())
-            await asyncio.sleep(1)
+        assert(all(char.isalpha() or char == "_" for char in table_name))
+
+        record = await db_conn.fetchrow(f"SELECT * FROM {table_name} WHERE guild_id=$1;", guild_id)
+        if record is None:
+            print(f"creating entry in {table_name} in guild {guild_id}")
+            # enable tracker and initialize invite counts
+            if channel_id is not None:
+                query = f"INSERT INTO {table_name} (guild_id, channel_id) VALUES ($1, $2);"
+                await db_conn.execute(query, guild_id, channel_id)
+            else:
+                query = f"INSERT INTO {table_name} (guild_id) VALUES ($1);"
+                await db_conn.execute(query, guild_id)
+            return True
+        return False
 
 
 
