@@ -228,7 +228,7 @@ class vchat(commands.Cog):
         if vchannel and not after.channel and vchannel.guild.voice_client:
             vclient = vchannel.guild.voice_client
             my_channel = vclient.channel
-            if vchannel != my_channel and all(member.bot for member in my_channel.members):
+            if vchannel == my_channel and all(member.bot for member in my_channel.members):
                 await vclient.disconnect()
 
 
