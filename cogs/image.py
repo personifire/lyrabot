@@ -1,9 +1,11 @@
-import discord
-from discord.ext import commands
+import importlib
 import os
 import typing
 
 import lib.hat
+
+import discord
+from discord.ext import commands
 
 class image(commands.Cog):
     """ Does various image things (eventually) """

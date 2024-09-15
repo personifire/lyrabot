@@ -22,6 +22,8 @@ async def init_tables(db_conn):
         );
     """) 
 
+    # TODO completely fucking rewrite role persistence because you FORGOT TO FUCKING PUSH TO GITHUB BEFORE DELETING YOUR OLD AWS SERVER AAAAAAAAAAAAAAAAAAA
+    #    - or, just redesign it from the ground up since it's really ugly as is...
 
 
 class admin(commands.Cog):
@@ -46,16 +48,6 @@ class admin(commands.Cog):
             await member.add_roles(role_selection.pop())
             await asyncio.sleep(1)
 
-    @commands.command()
-    @commands.has_guild_permissions(manage_roles = True)
-    @commands.bot_has_guild_permissions(manage_roles = True)
-    async def selfassign(self, ctx, *, role: discord.Role):
-        msg = "Use any reaction to this post to self-assign the " 
-        msg += "**" + role.name + "** (id: " + str(role.id) + ")"
-        msg += " role! Or remove (or react then remove) to self-remove the role."
-
-        await ctx.send(msg)
-    
     @commands.command()
     @commands.has_guild_permissions(manage_guild = True)
     @commands.bot_has_guild_permissions(manage_guild = True) # unfortunate but necessary
@@ -86,47 +78,12 @@ class admin(commands.Cog):
     #################################################################################
 
     @commands.Cog.listener()
-    async def on_raw_reaction_add(self, rawreactevent):
-        await self.react_change_role(rawreactevent)
-
-    @commands.Cog.listener()
-    async def on_raw_reaction_remove(self, rawreactevent):
-        await self.react_change_role(rawreactevent)
-
-    @commands.Cog.listener()
     async def on_member_join(self, member):
         await self.invite_tracker_join(member)
 
     ################################################################################
     ##############################   event handlers   ##############################
     ################################################################################
-
-    ##### react roles #####
-
-    async def react_change_role(self, rawreactevent):
-        guild   = discord.utils.get(self.bot.guilds, id=rawreactevent.guild_id)
-        if guild is None:
-            return
-        channel = guild.get_channel(rawreactevent.channel_id)
-        if channel is None:
-            return
-        message = await channel.fetch_message(rawreactevent.message_id)
-        if message is None:
-            return
-
-        if message.author == guild.me:
-            msgregexstr  = "^Use any reaction to this post to self-assign the .*(\(id: (.*)\)) role!"
-            msgregexstr += " Or remove \(or react then remove\) to self-remove the role.$"
-            msgregex = re.compile(msgregexstr)
-            match = msgregex.match(message.content)
-            if match:
-                roleid = int(match.group(2))
-                user = guild.get_member(rawreactevent.user_id)
-                role = guild.get_role(roleid)
-                if rawreactevent.event_type == "REACTION_ADD":
-                    await user.add_roles(role)
-                elif rawreactevent.event_type == "REACTION_REMOVE":
-                    await user.remove_roles(role)
 
     ##### invite tracker #####
 

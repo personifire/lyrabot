@@ -56,6 +56,12 @@ class video(commands.Cog):
                 elif len(vidmsg.embeds) > 0 and vidmsg.embeds[0].video.url is not None:
                     video = vidmsg.embeds[0].video.url
                     break
+            if video is None and ctx.message.reference is not None:
+                vidmsg = await ctx.channel.fetch_message(ctx.message.reference.message_id)
+                if len(vidmsg.attachments) > 0:
+                    video = vidmsg.attachments[0].url
+                elif len(vidmsg.embeds) > 0 and vidmsg.embeds[0].video.url is not None:
+                    video = vidmsg.embeds[0].video.url
             if video is None:
                 return await ctx.send("Is there a video to stickbug?")
 

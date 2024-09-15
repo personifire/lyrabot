@@ -1,3 +1,5 @@
+import asyncio
+from datetime import datetime, timedelta
 import random
 import re
 
@@ -10,7 +12,8 @@ class fun(commands.Cog):
         self.client = client
         self.star_id = 410660094083334155
 
-        self.russianCount = random.randint(0, 5)
+        self.russian_count = random.randint(0, 5)
+        self.rr_victims = {}
 
 
     @commands.Cog.listener()
@@ -37,8 +40,6 @@ class fun(commands.Cog):
                     await message.channel.send("<:dab:531755608467046401>")
                 elif "default" in new:
                     await message.channel.send("<a:default:531762705128751105>")
-                #elif "excite" in new:
-                    #await message.channel.send("<a:excite:525138734145077259>")
                 elif "flyra" in new:
                     await message.channel.send("<a:flyra:531755302996148237>")
                 elif "lyravator" in new:
@@ -175,14 +176,58 @@ class fun(commands.Cog):
 
     @commands.command()
     @commands.cooldown(2, 7, commands.BucketType.user)
-    async def rr(self, ctx):
+    async def rr(self, ctx, target:discord.User = None):
         """ Russian roulette! """
-        if self.russianCount > 0:
-            await ctx.channel.send(ctx.message.author.mention + ' *click*')
-            self.russianCount -= 1
+        # update victims list -- note, this is not guild-specific
+        now = datetime.now()
+        victim_window = timedelta(minutes=5) # time willing participants open themselves up to get fucked for
+        self.rr_victims = {victim: deadline for victim, deadline in self.rr_victims.items() if now < deadline}
+        self.rr_victims[ctx.author] = now + victim_window
+
+        # _rr_helper doesn't timeout if passed 0 duration; kinda dirty, but lets us do perms checking in here, rather than there
+        can_timeout = False
+        if type(ctx.me) == discord.Member:
+            if ctx.me.guild_permissions.moderate_members:
+                can_timeout = True
+
+        timeout_duration = 30 if can_timeout else 0 
+
+        if target:
+            if target == ctx.me:
+                # you lose!
+                self.russian_count = 0
+                await self._rr_helper(ctx.channel, ctx.author, 4 * timeout_duration, ' **BANG BANG BANG BANG**')
+            elif target in self.rr_victims: 
+                safe = await self._rr_helper(ctx.channel, target, timeout_duration)
+
+                if safe:
+                    await ctx.send(ctx.author.mention + " You're safe... for now, you murderer.")
+                else:
+                    bang_msg = f' {"*click* " * self.russian_count}**BANG**'
+                    self.russian_count = 0
+                    await self._rr_helper(ctx.channel, ctx.author, timeout_duration, bang_msg)
+            else: 
+                msgs = [" Don't point that thing at a random innocent!", " At least point it at somebody who's playing right now!", " Nope!", " Hmmm, nah."]
+                await ctx.send(ctx.author.mention + random.choice(msgs))
+
+            return # don't run anything else if targetted
+
+        # self-target
+        await self._rr_helper(ctx.channel, ctx.author, timeout_duration)
+
+    async def _rr_helper(self, channel, victim, timeout_duration, custom_bang=None):
+        if self.russian_count > 0:
+            await channel.send(victim.mention + ' *click*')
+            self.russian_count -= 1
+            return False
         else:
-            await ctx.channel.send(ctx.message.author.mention + ' **BANG**')
-            self.russianCount = random.randint(0, 5)
+            await channel.send(victim.mention + (custom_bang or ' **BANG**'))
+            self.russian_count = random.randint(0, 5)
+
+            if timeout_duration:
+                await asyncio.sleep(10)
+                await victim.timeout(timedelta(seconds=timeout_duration))
+            return True
 
     @commands.command()
     @commands.cooldown(2, 7, commands.BucketType.user)
