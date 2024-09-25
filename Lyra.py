@@ -55,6 +55,8 @@ async def on_command_error(ctx, err):
         await ctx.send(f"You're on cooldown for another {round(err.retry_after)}s, {ctx.author.display_name}")
     elif isinstance(err, commands.NoPrivateMessage):
         await ctx.send("Sorry, that command doesn't work in PMs!")
+    elif isinstance(err, commands.UserNotFound) or isinstance(err, commands.MemberNotFound):
+        await ctx.send("Who?")
     else:
         raise err # gotta log them somewhere
 

@@ -73,6 +73,24 @@ class admin(commands.Cog):
             await db_conn.execute(f"DELETE FROM inv_tracker_guilds WHERE guild_id=$1;", ctx.guild.id)
             return await ctx.send("Removed invite tracking.")
 
+    @commands.command()
+    @commands.has_guild_permissions(manage_roles = True)
+    @commands.bot_has_guild_permissions(manage_roles = True)
+    async def archive(self, ctx, channel: discord.TextChannel=None):
+        """ convert all role overwrites into member overwrites for a given channel """
+        if channel is None:
+            channel = ctx.channel
+        overwrites = channel.overwrites
+
+        for target, overwrite in overwrites.items():
+            if not isinstance(target, discord.Role) and not target.is_default():
+                continue
+
+            for member in target.members:
+                if member != ctx.me:
+                    await channel.set_permissions(member, overwrite=overwrite)
+            await channel.set_permissions(target, overwrite=None)
+
     #################################################################################
     #################################   listeners   #################################
     #################################################################################
