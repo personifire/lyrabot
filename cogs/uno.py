@@ -1,10 +1,11 @@
 import discord
 from discord.ext import commands
 
-import asyncio
 import importlib
 
 import lib.uno.controller
+import lib.uno.models
+import lib.uno.views
 
 class Uno(commands.Cog):
     """ Runs a game of uno!
@@ -85,7 +86,7 @@ class Uno(commands.Cog):
     @uno.command()
     @commands.has_guild_permissions(administrator=True)
     async def end(self, ctx):
-        await self.games[ctx.channel.id].die(": (killed by admin)") # TODO this is empty; likely getting removed on death
+        await self.games[ctx.channel.id].die("(killed by admin)")
         del self.games[ctx.channel.id]
         return await ctx.send("Uno game has ended early (killed by admin).")
 
@@ -93,35 +94,6 @@ class Uno(commands.Cog):
         importlib.reload(lib.uno.controller)
         importlib.reload(lib.uno.models)
         importlib.reload(lib.uno.views)
-
-# old messages
-"""
-send("There's no game to leave!")
-send("Too few players left. Game's gonna have to end early!")
-send(ctx.author.name + " has left the game. " + str(len(self.players)) + " players remain.")
-
-send("Let's wait for one of the players to start, yes?")
-send("Putting the top card on the discard! " + self.card_name(card))
-
-send('You can only vote to end the game once! Try "!uno leave" to leave early.')
-send(ctx.author.name + " has voted to end the game. " + 
-
-send("You can only vote to kick someone once!")
-send(ctx.author.name + " has voted to kick " + player.name + ". " +
-
-send("You need to select a card to play.")
-send("Try a number, instead.")
-send("Try a number that makes sense, instead.")
-
-send("Wait for the game to start before drawing!")
-send("Wait for your turn, " + player.name + "!")
-send("You can't draw that, try a number instead.")
-send("Try a more reasonable number, instead.")
-
-send("Wait for the game to start before looking at your hand!")
-send("You can't look at your hand if you're not in the game!")
-send("Your hand has been sent, " + ctx.author.name + ". Check your messages!")
-"""
 
 async def setup(client):
     await client.add_cog(Uno(client))
